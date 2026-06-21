@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1E3A5F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cabinet Clear">
+<title>Cabinet Clear</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1E3A5F;
+    --accent: #3B82F6;
+    --accent-light: #EFF6FF;
+    --bg: #F8FAFC;
+    --card: #FFFFFF;
+    --text: #0F172A;
+    --muted: #64748B;
+    --border: #E2E8F0;
+    --green: #16A34A;
+    --green-bg: #F0FDF4;
+    --red: #DC2626;
+    --red-bg: #FEF2F2;
+    --yellow: #B45309;
+    --yellow-bg: #FFFBEB;
+    --purple: #7C3AED;
+    --purple-bg: #F5F3FF;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  header {
+    background: var(--navy);
+    padding: 28px 24px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: rgba(59,130,246,0.12);
+    border-radius: 50%;
+  }
+  .header-inner { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+  .header-tag {
+    display: inline-block;
+    background: rgba(59,130,246,0.2);
+    color: #93C5FD;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  header p {
+    color: #93C5FD;
+    font-size: 0.9rem;
+    margin-top: 6px;
+    max-width: 420px;
+  }
+
+  /* Layout */
+  .container { max-width: 640px; margin: 0 auto; padding: 28px 16px 60px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .card.fade-in {
+    animation: fadeUp 0.35s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Step header */
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .step-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .step-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+  .step-divider {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Form elements */
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 110px;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    background: #fff;
+  }
+  textarea::placeholder { color: #CBD5E1; }
+
+  .or-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 14px 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .or-row::before, .or-row::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* File upload zone */
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    padding: 22px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--bg);
+  }
+  .upload-zone:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .upload-zone input { display: none; }
+  .upload-icon {
+    width: 40px; height: 40px;
+    background: var(--accent-light);
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  .upload-zone p { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .upload-zone strong { font-size: 0.9rem; color: var(--text); }
+  .file-chosen {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    background: var(--accent-light);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Buttons */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 13px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    letter-spacing: -0.01em;
+  }
+  .btn-primary {
+    background: var(--navy);
+    color: #fff;
+    margin-top: 16px;
+  }
+  .btn-primary:hover:not(:disabled) { background: #162d4a; }
+  .btn-primary:disabled { background: #CBD5E1; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    margin-top: 12px;
+  }
+  .btn-ghost:hover { background: var(--accent-light); }
+
+  /* Loader */
+  .loader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0 4px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Letter summary */
+  .summary-box {
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 0.88rem;
+  }
+  .summary-box .diag {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--navy);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .summary-section { margin-top: 10px; }
+  .summary-section .s-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+  .summary-section ul { padding-left: 16px; }
+  .summary-section li { margin-bottom: 3px; color: var(--text); }
+  .warning-list li { color: var(--red) !important; }
+
+  .conf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .conf-high { background: var(--green-bg); color: var(--green); }
+  .conf-medium { background: var(--yellow-bg); color: var(--yellow); }
+  .conf-low { background: var(--red-bg); color: var(--red); }
+
+  /* Medicine list */
+  .med-list { display: flex; flex-direction: column; gap: 8px; }
+  .med-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    animation: fadeUp 0.25s ease both;
+  }
+  .med-card-left { flex: 1; min-width: 0; }
+  .med-card-name { font-weight: 600; font-size: 0.9rem; }
+  .med-card-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-ok { background: var(--green); }
+  .dot-exp { background: var(--red); }
+  .dot-unclear { background: var(--yellow); }
+  .remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #CBD5E1;
+    font-size: 1rem;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .remove-btn:hover { color: var(--red); }
+
+  .add-med {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: none;
+    width: 100%;
+    font-family: inherit;
+    margin-top: 8px;
+  }
+  .add-med:hover { border-color: var(--accent); background: var(--accent-light); }
+
+  /* Results */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .summary-tile {
+    padding: 12px 8px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .summary-tile .n {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    display: block;
+  }
+  .summary-tile .lbl {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-top: 4px;
+  }
+  .tile-keep { background: var(--green-bg); color: var(--green); }
+  .tile-dispose { background: var(--red-bg); color: var(--red); }
+  .tile-unclear { background: var(--yellow-bg); color: var(--yellow); }
+  .tile-missing { background: var(--purple-bg); color: var(--purple); }
+
+  .result-group { margin-bottom: 20px; }
+  .group-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .label-keep { color: var(--green); }
+  .label-dispose { color: var(--red); }
+  .label-unclear { color: var(--yellow); }
+  .label-missing { color: var(--purple); }
+
+  .result-card {
+    display: flex;
+    gap: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    background: #fff;
+    animation: fadeUp 0.3s ease both;
+  }
+  .result-edge {
+    width: 4px;
+    flex-shrink: 0;
+  }
+  .edge-keep { background: var(--green); }
+  .edge-dispose { background: var(--red); }
+  .edge-unclear { background: #F59E0B; }
+  .edge-missing { background: var(--purple); }
+
+  .result-body {
+    padding: 12px 14px;
+    flex: 1;
+    min-width: 0;
+  }
+  .result-name { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+  .result-action { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+  .result-warning { font-size: 0.82rem; color: var(--red); margin-top: 4px; font-weight: 500; }
+  .result-meta { font-size: 0.78rem; color: #94A3B8; margin-top: 3px; }
+
+  .status-pill {
+    align-self: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .pill-keep { background: var(--green-bg); color: var(--green); }
+  .pill-dispose { background: var(--red-bg); color: var(--red); }
+  .pill-unclear { background: var(--yellow-bg); color: var(--yellow); }
+  .pill-missing { background: var(--purple-bg); color: var(--purple); }
+
+  .disclaimer {
+    background: #FFF7ED;
+    border: 1px solid #FED7AA;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    color: #92400E;
+    line-height: 1.5;
+    margin-top: 16px;
+  }
+  .disclaimer strong { display: block; margin-bottom: 2px; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 480px) {
+    header { padding: 22px 16px 28px; }
+    header h1 { font-size: 1.4rem; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .summary-tile .n { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="authCard" style="max-width: 640px; margin: 20px auto; padding: 0 16px;">
+  <div class="card" style="background: #FFFFFF; color: var(--text); border: 2px solid var(--accent);">
+    <div class="step-header">
+      <span class="step-num">🔐</span>
+      <span class="step-title">Account Gateway (Required to Save History)</span>
+      <div class="step-divider"></div>
+    </div>
+    <div style="display: flex; gap: 8px; flex-direction: column;">
+      <label>Username</label>
+      <input type="text" id="authUsername" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px;">
+      <label>Password</label>
+      <input type="password" id="authPassword" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; margin-bottom:12px;">
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-primary" onclick="handleAuth('login')" style="margin-top:0; flex:1;">Log In</button>
+        <button class="btn btn-ghost" onclick="handleAuth('register')" style="margin-top:0; flex:1;">Sign Up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="header-tag">AI Health Assistant</div>
+    <h1>Cabinet Clear</h1>
+    <p>Understand your discharge letter and know exactly what to keep, take, or replace.</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="card" id="step1">
+    <div class="step-header">
+      <span class="step-num">01</span>
+      <span class="step-title">Your Discharge Letter</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <label>Paste letter text</label>
+    <textarea id="letterText" placeholder="Paste the text from your hospital discharge letter here…"></textarea>
+
+    <div class="or-row">or upload a file</div>
+
+    <div class="upload-zone" onclick="document.getElementById('letterFile').click()">
+      <div class="upload-icon">📄</div>
+      <strong>Tap to upload</strong>
+      <p>PDF, JPG, or PNG · Max 10MB</p>
+      <input type="file" id="letterFile" accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="handleLetterFile(this)">
+    </div>
+    <div id="letterFileName" class="file-chosen hidden">
+      <span>📎</span><span id="letterFileNameText"></span>
+    </div>
+
+    <button class="btn btn-primary" id="extractBtn" onclick="extractLetter()">Read Letter</button>
+  </div>
+
+  <!-- Letter result -->
+  <div class="card hidden fade-in" id="letterResult">
+    <div class="step-header">
+      <span class="step-num" style="color: var(--green)">✓</span>
+      <span class="step-title">Letter Summary</span>
+      <div class="step-divider"></div>
+      <span id="letterConfBadge" class="conf-badge"></span>
+    </div>
+    <div class="summary-box" id="letterSummaryContent"></div>
+    <button class="btn btn-ghost" onclick="showStep2()">Scan medicine cabinet →</button>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="card hidden" id="step2">
+    <div class="step-header">
+      <span class="step-num">02</span>
+      <span class="step-title">Medicine Cabinet</span>
+      <div class="step-divider"></div>
+    </div>
+    <p style="font-size:0.83rem;color:var(--muted);margin-bottom:14px">
+      Take a clear photo of each medicine. Make sure the label and expiration date are in frame.
+    </p>
+   <div class="med-list" id="medList"></div>
+    <button class="add-med" onclick="addMedSlot()">
+      <span>＋</span> Add medicine
+    </button>
+    <button class="btn btn-primary" id="analyzeBtn" onclick="runAnalysis()">Check my cabinet</button>
+  </div>
+
+  <!-- Results -->
+  <div class="card hidden fade-in" id="resultsCard">
+    <div class="step-header">
+      <span class="step-num" style="color: var(--green)">✓</span>
+      <span class="step-title">Your Medicine Plan</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-tile tile-keep">
+        <span class="n" id="countKeep">0</span>
+        <span class="lbl">Keep</span>
+      </div>
+      <div class="summary-tile tile-dispose">
+        <span class="n" id="countDispose">0</span>
+        <span class="lbl">Dispose</span>
+      </div>
+      <div class="summary-tile tile-unclear">
+        <span class="n" id="countUnclear">0</span>
+        <span class="lbl">Unclear</span>
+      </div>
+      <div class="summary-tile tile-missing">
+        <span class="n" id="countMissing">0</span>
+        <span class="lbl">Get from pharmacy</span>
+      </div>
+    </div>
+
+    <div id="resultsContent"></div>
+
+    <div class="disclaimer">
+      <strong>For reference only</strong>
+      This tool organizes information from your documents. It does not make medical decisions. Always confirm what medications to take with your doctor or pharmacist.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = '';
+  let dischargeData = null;
+  let cabinetMeds = [];
+  let medCounter = 0;
+  let slotData = {};
+  let crossRefResult = null;
+  let interactionData = [];
+  let urgencyData = [];
+  let currentSessionUser = null;
+
+  function handleLetterFile(input) {
+    if (input && input.files && input.files[0]) {
+      document.getElementById('letterFileNameText').textContent = input.files[0].name;
+      document.getElementById('letterFileName').classList.remove('hidden');
+    }
+  }
+
+  function showStep2() {
+    const s2 = document.getElementById('step2');
+    if (s2) {
+      s2.classList.remove('hidden');
+      s2.classList.add('fade-in');
+      s2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  async function handleAuth(type) {
+    const username = document.getElementById('authUsername').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+    if (!username || !password) { alert('Please supply both username and password.'); return; }
+
+    try {
+      const res = await fetch(`${API}/auth/${type}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Authentication failed");
+
+      if (type === 'login') {
+        currentSessionUser = json.username;
+        document.getElementById('authCard').classList.add('hidden');
+        alert(`Welcome back, ${currentSessionUser}! Local history session loaded.`);
+        loadSavedHistory();
+      } else {
+        alert('Registration successful! You can now log into your account.');
+      }
+    } catch(e) {
+      alert(e.message);
+    }
+  }
+
+  async function saveScanToHistoryLog() {
+    if (!currentSessionUser || !dischargeData || !crossRefResult) return;
+    try {
+      await fetch(`${API}/history/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: currentSessionUser,
+          diagnosis: dischargeData.diagnosis_summary || "Unspecified Medical Evaluation",
+          letter_data: dischargeData,
+          cabinet_data: crossRefResult
+        })
+      });
+      console.log("Historical execution log synced successfully.");
+    } catch(e) { console.log("Failed to preserve structural timeline trace:", e); }
+  }
+
+  async function loadSavedHistory() {
+    if (!currentSessionUser) return;
+    try {
+      const res = await fetch(`${API}/history/get/${currentSessionUser}`);
+      const json = await res.json();
+      if (json.success && json.data.length > 0) {
+        console.log("Historical timeline entries located:", json.data);
+      }
+    } catch(e) { console.log("Failed to reload previous logs:", e); }
+  }
+
+  async function extractLetter() {
+    const text = document.getElementById('letterText').value.trim();
+    const file = document.getElementById('letterFile').files[0];
+    if (!text && !file) { alert('Please paste the letter text or upload a file.'); return; }
+
+    const btn = document.getElementById('extractBtn');
+    btn.disabled = true;
+    btn.textContent = 'Reading…';
+
+    const loaderEl = document.createElement('div');
+    loaderEl.className = 'loader';
+    loaderEl.id = 'loader1';
+    loaderEl.innerHTML = '<div class="spinner"></div><span>Analyzing your discharge letter…</span>';
+    document.getElementById('step1').appendChild(loaderEl);
+
+    try {
+      const fd = new FormData();
+      if (text) fd.append('text', text);
+      else fd.append('file', file);
+
+      const res = await fetch(`${API}/extract-letter`, { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+
+      dischargeData = json.data;
+      renderLetterSummary(json.data);
+      const result = document.getElementById('letterResult');
+      result.classList.remove('hidden');
+      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch(e) {
+      alert('Something went wrong: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Read Letter';
+      document.getElementById('loader1')?.remove();
+    }
+  }
+
+  function renderLetterSummary(data) {
+    const conf = data.extraction_confidence || 'high';
+    const badge = document.getElementById('letterConfBadge');
+    if (badge) {
+      badge.textContent = conf + ' confidence';
+      badge.className = `conf-badge conf-${conf}`;
+    }
+
+    let html = `<div class="diag">${data.diagnosis_summary || 'Summary not available.'}</div>`;
+
+    if (data.medications?.length) {
+      html += `<div class="summary-section"><div class="s-label">Medications</div><ul>`;
+      data.medications.forEach(m => {
+        html += `<li><strong>${m.name}</strong> ${m.dosage} &mdash; ${m.frequency}${m.duration ? ', ' + m.duration : ''}</li>`;
+      });
+      html += '</ul></div>';
+    }
+    if (data.follow_up_appointments?.length) {
+      html += `<div class="summary-section"><div class="s-label">Follow-up</div><ul>`;
+      data.follow_up_appointments.forEach(f => {
+        html += `<li>${f.type} &mdash; ${f.timeframe}</li>`;
+      });
+      html += '</ul></div>';
+    }
+    if (data.warning_signs?.length) {
+      html += `<div class="summary-section"><div class="s-label" style="color:var(--red)">Go to ER if</div><ul class="warning-list">`;
+      data.warning_signs.forEach(w => { html += `<li>${w}</li>`; });
+      html += '</ul></div>';
+    }
+    document.getElementById('letterSummaryContent').innerHTML = html;
+  }
+
+  function addMedSlot() {
+    const slotId = medCounter++;
+    const slot = document.createElement('div');
+    slot.id = `slot-${slotId}`;
+    slot.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px;background:var(--bg);animation:fadeUp 0.25s ease both';
+    slot.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:0.82rem;font-weight:600;color:var(--navy)">Medicine ${slotId + 1}</span>
+        <button onclick="removeSlot(${slotId})" style="background:none;border:none;cursor:pointer;color:#CBD5E1;font-size:1rem">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div id="photo-front-${slotId}" onclick="triggerPhoto(${slotId},'front')" style="flex:1;border:1.5px dashed var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;font-size:0.78rem;color:var(--muted);transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          Front label
+        </div>
+        <div id="photo-exp-${slotId}" onclick="triggerPhoto(${slotId},'exp')" style="flex:1;border:1.5px dashed var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;font-size:0.78rem;color:var(--muted);transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          Expiry date
+        </div>
+      </div>
+      <input type="file" id="file-front-${slotId}" accept=".jpg,.jpeg,.png,.webp" capture="camera" style="display:none" onchange="handleSlotPhoto(${slotId},'front',this)">
+      <input type="file" id="file-exp-${slotId}" accept=".jpg,.jpeg,.png,.webp" capture="camera" style="display:none" onchange="handleSlotPhoto(${slotId},'exp',this)">
+      <div id="result-${slotId}" class="hidden"></div>
+      <button onclick="scanSlot(${slotId})" id="scan-btn-${slotId}" style="width:100%;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit">
+        Scan this medicine
+      </button>`;
+    document.getElementById('medList').appendChild(slot);
+    slotData[slotId] = { front: null, exp: null, result: null };
+  }
+
+  function triggerPhoto(slotId, type) {
+    document.getElementById(`file-${type}-${slotId}`).click();
+  }
+
+  async function handleSlotPhoto(slotId, type, input) {
+    if (!input || !input.files || !input.files[0]) return;
+    slotData[slotId][type] = input.files[0];
+    const zone = document.getElementById(`photo-${type}-${slotId}`);
+    zone.style.borderColor = 'var(--accent)';
+    zone.style.background = 'var(--accent-light)';
+    zone.style.color = 'var(--accent)';
+    zone.textContent = 'Checking clarity...';
+
+    try {
+      const fd = new FormData();
+      fd.append('file', input.files[0]);
+      const res = await fetch(`${API}/check-clarity`, { method: 'POST', body: fd });
+      const json = await res.json();
+
+      if (json.success) {
+        const d = json.data;
+        if (d.is_clear) {
+          zone.style.borderColor = 'var(--green)';
+          zone.style.background = 'var(--green-bg)';
+          zone.style.color = 'var(--green)';
+          zone.innerHTML = `✓ ${type === 'front' ? 'Front' : 'Expiry'} added<br><span style="font-size:0.7rem">${d.confidence_pct}% clear</span>`;
+        } else {
+          zone.style.borderColor = 'var(--red)';
+          zone.style.background = 'var(--red-bg)';
+          zone.style.color = 'var(--red)';
+          zone.innerHTML = `⚠️ Unclear photo<br><span style="font-size:0.7rem">${d.confidence_pct}% confidence</span>`;
+
+          let heatmapDiv = document.getElementById(`cam-${type}-${slotId}`);
+          if (!heatmapDiv) {
+            heatmapDiv = document.createElement('div');
+            heatmapDiv.id = `cam-${type}-${slotId}`;
+            zone.parentElement.appendChild(heatmapDiv);
+          }
+          heatmapDiv.style.cssText = 'margin-top:8px;border-radius:6px;overflow:hidden;border:1px solid var(--border)';
+          heatmapDiv.innerHTML = `
+            <div style="font-size:0.72rem;color:var(--muted);padding:4px 8px;background:var(--bg)">
+              🔍 CNN attention map — red areas flagged as unclear
+            </div>
+            <img src="data:image/png;base64,${d.heatmap_base64}" style="width:100%;display:block">`;
+          slotData[slotId][type] = null;
+        }
+      }
+    } catch(e) {
+      zone.style.borderColor = 'var(--green)';
+      zone.style.background = 'var(--green-bg)';
+      zone.style.color = 'var(--green)';
+      zone.textContent = type === 'front' ? '✓ Front added' : '✓ Expiry added';
+    }
+    input.value = '';
+  }
+
+  async function scanSlot(slotId) {
+    const data = slotData[slotId];
+    if (!data.front && !data.exp) { alert('Please add at least one photo.'); return; }
+
+    const btn = document.getElementById(`scan-btn-${slotId}`);
+    btn.textContent = 'Scanning…';
+    btn.disabled = true;
+
+    try {
+      let merged = {};
+      for (const type of ['front', 'exp']) {
+        if (!data[type]) continue;
+        const fd = new FormData();
+        fd.append('file', data[type]);
+        const res = await fetch(`${API}/scan-medicine`, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error);
+        const med = json.data;
+
+        for (const key of Object.keys(med)) {
+          if (!merged[key] || merged[key] === null || merged[key] === 'Unknown' || merged[key] === '') {
+            merged[key] = med[key];
+          }
+          if (key === 'extraction_confidence') {
+            const order = { high: 2, medium: 1, low: 0 };
+            if ((order[med[key]] ?? 2) < (order[merged[key]] ?? 2)) merged[key] = med[key];
+          }
+          if (key === 'is_expired' && med[key] === true) merged[key] = true;
+        }
+      }
+
+      cabinetMeds.push(merged);
+      slotData[slotId].result = merged;
+
+      const isExp = merged.is_expired;
+      const conf = merged.extraction_confidence;
+      const dotClass = conf === 'low' ? 'dot-unclear' : isExp ? 'dot-exp' : 'dot-ok';
+      const statusText = conf === 'low' ? 'Unclear' : isExp ? 'Expired' : 'Valid';
+      const subColor = conf === 'low' ? 'var(--yellow)' : isExp ? 'var(--red)' : 'var(--green)';
+
+      const resultDiv = document.getElementById(`result-${slotId}`);
+      resultDiv.classList.remove('hidden');
+      resultDiv.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0">
+          <div class="status-dot ${dotClass}"></div>
+          <div>
+            <div style="font-weight:600;font-size:0.88rem">${merged.drug_name || 'Unknown'} ${merged.dosage_strength || ''}</div>
+            <div style="font-size:0.78rem;color:${subColor}">${statusText} · EXP: ${merged.expiration_date || 'not found'}</div>
+          </div>
+        </div>`;
+
+      btn.textContent = '✓ Scanned';
+      btn.style.background = 'var(--green)';
+    } catch(e) {
+      btn.textContent = 'Retry';
+      btn.disabled = false;
+      alert('Scan failed: ' + e.message);
+    }
+  }
+
+  function removeSlot(slotId) {
+    document.getElementById(`slot-${slotId}`)?.remove();
+    if (slotData[slotId]?.result) {
+      const idx = cabinetMeds.findIndex(m => m === slotData[slotId].result);
+      if (idx > -1) cabinetMeds.splice(idx, 1);
+    }
+    delete slotData[slotId];
+  }
+
+  async function runAnalysis() {
+    if (!dischargeData) { alert('Please read your discharge letter first.'); return; }
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    btn.textContent = 'Checking…';
+
+    try {
+      const res = await fetch(`${API}/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ discharge_data: dischargeData, cabinet_meds: cabinetMeds })
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Analysis failed");
+
+      crossRefResult = json.data || json;
+
+      const keepMeds = crossRefResult.keep?.map(m => m.drug_name) || [];
+      let interactions = [];
+      if (keepMeds.length > 1) {
+        try {
+          const intRes = await fetch(`${API}/check-interactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ medications: keepMeds })
+          });
+          const intJson = await intRes.json();
+          if (intJson.success) interactions = intJson.data || [];
+        } catch(e) { console.log('Interaction check failed:', e); }
+      }
+      interactionData = interactions;
+
+      const warningSigns = dischargeData.warning_signs || [];
+      let scoredWarnings = [];
+      if (warningSigns.length > 0) {
+        try {
+          const urgRes = await fetch(`${API}/score-urgency`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ warning_signs: warningSigns })
+          });
+          const urgJson = await urgRes.json();
+          if (urgJson.success) scoredWarnings = urgJson.data || [];
+        } catch(e) { console.log('Urgency scoring failed:', e); }
+      }
+      urgencyData = scoredWarnings;
+
+      renderResults(crossRefResult, interactions, scoredWarnings);
+      saveScanToHistoryLog();
+
+      const card = document.getElementById('resultsCard');
+      card.classList.remove('hidden');
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch(e) {
+      alert('Analysis Error: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Check my cabinet';
+    }
+  }
+
+  function renderResults(data, interactions, scoredWarnings) {
+    const s = data.summary || { keep: 0, dispose: 0, unclear: 0, missing_from_cabinet: 0 };
+    document.getElementById('countKeep').textContent = s.keep;
+    document.getElementById('countDispose').textContent = s.dispose;
+    document.getElementById('countUnclear').textContent = s.unclear;
+    document.getElementById('countMissing').textContent = s.missing_from_cabinet;
+
+    let html = '';
+
+    function makeGroup(items, type, label, pill) {
+      if (!items?.length) return '';
+      let g = `<div class="result-group"><div class="group-label label-${type}">${label} &mdash; ${items.length}</div>`;
+      items.forEach(m => {
+        g += `<div class="result-card">
+          <div class="result-edge edge-${type}"></div>
+          <div class="result-body">
+            <div class="result-name">${m.drug_name || 'Unknown'}${m.prescribed_dosage || m.dosage ? ' <span style="font-weight:400;color:var(--muted)">'+(m.prescribed_dosage || m.dosage)+'</span>' : ''}</div>
+            <div class="result-action">${m.action || ''}</div>
+            ${m.warning ? `<div class="result-warning">${m.warning}</div>` : ''}
+            ${m.expiration_date ? `<div class="result-meta">EXP: ${m.expiration_date}</div>` : ''}
+            ${m.prescribed_frequency ? `<div class="result-meta">Take: ${m.prescribed_frequency}</div>` : ''}
+            ${m.purpose ? `<div class="result-meta">Purpose: ${m.purpose}</div>` : ''}
+            ${m.clinical_warning ? `<div style="font-size:0.78rem;color:#92400E;background:#FFF7ED;padding:4px 8px;border-radius:4px;margin-top:4px">⚕️ ${m.clinical_warning}</div>` : ''}
+            ${m.details ? `<div class="result-meta">${m.details}</div>` : ''}
+          </div>
+          <span class="status-pill pill-${type}">${pill}</span>
+        </div>`;
+      });
+      return g + '</div>';
+    }
+
+    html += makeGroup(data.keep, 'keep', 'Keep', '✓ Keep');
+    html += makeGroup(data.dispose, 'dispose', 'Dispose', '✕ Expired');
+    html += makeGroup(data.unclear, 'unclear', 'Needs attention', '? Unclear');
+    html += makeGroup(data.missing_from_cabinet, 'missing', 'Get from pharmacy', '⚠ Missing');
+
+    if (interactions?.length) {
+      html += `<div class="result-group"><div class="group-label" style="color:#92400E">⚕️ Drug Interaction Alerts — ${interactions.length}</div>`;
+      interactions.forEach(i => {
+        html += `<div class="result-card">
+          <div class="result-edge" style="background:#F59E0B"></div>
+          <div class="result-body">
+            <div class="result-name">${i.drug_a} + ${i.drug_b}</div>
+            <div class="result-action">${i.message}</div>
+            <div class="result-meta">${i.action}</div>
+          </div>
+          <span class="status-pill" style="background:#FFF7ED;color:#92400E">⚠ Interaction</span>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    if (scoredWarnings?.length) {
+      const urgencyColors = {
+        immediate: { bg: '#FEF2F2', color: '#DC2626', label: '🚨 Call 911' },
+        urgent: { bg: '#FFF7ED', color: '#EA580C', label: '⚡ ER within 2hrs' },
+        monitor: { bg: '#FFFBEB', color: '#B45309', label: '👁 Monitor' }
+      };
+      html += `<div class="result-group"><div class="group-label" style="color:#DC2626">⚠️ Warning Signs — Ranked by Urgency</div>`;
+      const sorted = [...scoredWarnings].sort((a,b) => {
+        const order = { immediate: 0, urgent: 1, monitor: 2 };
+        return (order[a.urgency] ?? 3) - (order[b.urgency] ?? 3);
+      });
+      sorted.forEach(w => {
+        const uc = urgencyColors[w.urgency] || urgencyColors.monitor;
+        html += `<div style="display:flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:8px;background:#fff">
+          <div style="width:4px;background:${uc.color};flex-shrink:0"></div>
+          <div style="padding:10px 14px;flex:1">
+            <div style="font-weight:600;font-size:0.88rem">${w.plain_english || w.sign}</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">${w.timeframe}</div>
+          </div>
+          <span style="align-self:center;padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;margin-right:12px;background:${uc.bg};color:${uc.color};white-space:nowrap">${uc.label}</span>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    html += `<button onclick="downloadPDF()" class="btn btn-ghost" style="margin-bottom:12px">📄 Download PDF Summary</button>`;
+    document.getElementById('resultsContent').innerHTML = html;
+  }
+
+  async function downloadPDF() {
+    try {
+      const res = await fetch(`${API}/generate-pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          discharge_data: dischargeData,
+          cross_ref_result: crossRefResult,
+          interactions: interactionData
+        })
+      });
+      if (!res.ok) throw new Error('PDF generation failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cabinet_clear_summary.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch(e) {
+      alert('PDF download failed: ' + e.message);
+    }
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('SW registered'))
+        .catch(e => console.log('SW failed:', e));
+    });
+  }
+</script>
+</body>
+</html>
