@@ -313,4 +313,3 @@ Cabinet Clear organizes information only. It does not provide medical advice and
 
 ---
 
-*Built for USAII's Global AI Hackathon 2026, High School Track.*
