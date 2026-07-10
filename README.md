@@ -305,4 +305,4 @@ Cabinet Clear organizes information only. It does not provide medical advice and
 
 ---
 
-*Re-built for SunnyHacks with an improved frontend*
+*Re-built for this hackathon with an improved frontend*
