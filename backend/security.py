@@ -47,8 +47,8 @@ class Limits:
 
 LIMITS = Limits
 
-AI_PATHS = {"/extract-letter", "/scan-medicine", "/parse-med-list", "/explain", "/score-urgency"}
-UPLOAD_PATHS = {"/extract-letter", "/scan-medicine", "/check-clarity"}
+AI_PATHS = {"/extract-letter", "/scan-medicine", "/scan-cabinet", "/parse-med-list", "/explain", "/score-urgency"}
+UPLOAD_PATHS = {"/extract-letter", "/scan-medicine", "/scan-cabinet", "/check-clarity"}
 CLARITY_PATH = "/check-clarity"
 PROTECTED_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 

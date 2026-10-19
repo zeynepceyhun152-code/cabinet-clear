@@ -249,3 +249,18 @@ _install_language(app)
 # security: sign-in tokens, speed limits, daily AI cap and size limits (see security.py)
 from security import install as _install_security
 _install_security(app)
+
+
+# --- WHOLE-SHELF SCAN: one photo, every package outlined and read where possible ---
+from cabinet_scan import scan_cabinet
+
+@app.post("/scan-cabinet")
+async def scan_cabinet_endpoint(file: UploadFile = File(...)):
+    try:
+        mime = get_mime(file.filename or "", file.content_type or "")
+        if mime not in {"image/jpeg", "image/png", "image/webp"}:
+            return JSONResponse(status_code=400, content={"success": False, "error": "Please upload a valid image format."})
+        contents = await file.read()
+        return JSONResponse(content={"success": True, "data": scan_cabinet(contents)})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
