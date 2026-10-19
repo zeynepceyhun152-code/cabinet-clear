@@ -229,3 +229,7 @@ async def explain_endpoint(payload: dict):
         return JSONResponse(content={"success": True, "data": result})
     except Exception as e:
         return JSONResponse(status_code=500, content={"success": False, "error": str(e)})    
+
+# language: the page sends X-Lang (en or tr); the AI prompts and the PDF follow it
+from lang_middleware import install as _install_language
+_install_language(app)

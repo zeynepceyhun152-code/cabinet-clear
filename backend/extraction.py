@@ -3,6 +3,7 @@ import json
 import base64
 from dotenv import load_dotenv
 import anthropic
+from lang_ctx import language_instruction
 
 load_dotenv()
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
@@ -50,7 +51,7 @@ def extract_from_text(letter_text: str) -> dict:
     response = client.messages.create(
         model=MODEL,
         max_tokens=2000,
-        messages=[{"role": "user", "content": f"{EXTRACTION_PROMPT}\n\n{letter_text}"}]
+        messages=[{"role": "user", "content": f"{EXTRACTION_PROMPT}{language_instruction()}\n\n{letter_text}"}]
     )
     return _parse_json_response(response.content[0].text)
 
@@ -76,7 +77,7 @@ def extract_from_file(file_path: str, mime_type: str) -> dict:
                         "data": b64_data
                     }
                 },
-                {"type": "text", "text": EXTRACTION_PROMPT}
+                {"type": "text", "text": EXTRACTION_PROMPT + language_instruction()}
             ]
         }]
     )
@@ -111,7 +112,7 @@ def score_urgency(warning_signs: list) -> list:
         response = client.messages.create(
             model=MODEL,
             max_tokens=1500,
-            messages=[{"role": "user", "content": f"{URGENCY_PROMPT}\n\nWarning signs:\n{signs_text}"}]
+            messages=[{"role": "user", "content": f"{URGENCY_PROMPT}{language_instruction()}\n\nWarning signs:\n{signs_text}"}]
         )
         text = response.content[0].text.strip()
         if text.startswith("```"):

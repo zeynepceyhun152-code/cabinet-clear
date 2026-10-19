@@ -23,6 +23,7 @@ import re
 
 from reconcile import canonical
 from resources import find_resources
+from lang_ctx import get_lang
 
 # ---------------------------------------------------------------- style rules
 def _clamp(v, default=3):
@@ -75,9 +76,16 @@ def build_prompt(data, p):
              if p["define_terms"] else "Medical words are fine if kept short.")
     good = ("Leave good_to_know as an empty list." if p["mode"] == "calm_short"
             else "good_to_know: short items from activity restrictions or diet, only if present.")
+    lang_line = ""
+    if get_lang() == "tr":
+        lang_line = ("- Language: write ALL text in Turkish (Türkçe), in clear, formal wording. Do not translate "
+                     "medicine names. Copy the fields called original, appointment, when and name exactly as "
+                     "they appear in the letter data, even if they are in Turkish. Do not add emergency phone "
+                     "numbers that are not in the letter.\n")
     return (
         "You are helping a family member understand a hospital discharge letter.\n\n"
         "Reader style (follow exactly):\n"
+        + lang_line +
         f"- Tone: {p['tone']}\n"
         f"- Reading level: {p['level']}\n"
         f"- At most {p['max_sentence_words']} words per sentence.\n"
@@ -104,9 +112,12 @@ def build_prompt(data, p):
 
 # ---------------------------------------------------------------- faithfulness check
 _NUM = re.compile(r"\d+(?:\.\d+)?")
-ALLOWED_EXTRA_NUMBERS = {"911"}
+ALLOWED_EXTRA_NUMBERS = {"911", "112"}
 _BANNED = [r"\bstop taking\b", r"\bskip (?:a|your|the) dose\b", r"\bdouble (?:the|your) dose\b",
-           r"\bdon'?t need to (?:call|see)\b", r"\bsafe to (?:stop|skip|ignore)\b"]
+           r"\bdon'?t need to (?:call|see)\b", r"\bsafe to (?:stop|skip|ignore)\b",
+           # Turkish
+           r"ilac[ıi] b[ıi]rak", r"ilac[ıi] kesin", r"dozu atla", r"dozu iki kat", r"doktoru aramanıza gerek yok",
+           r"b[ıi]rakmanız güvenli"]
 
 
 def _numbers(text):

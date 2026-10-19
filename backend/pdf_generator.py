@@ -1,28 +1,87 @@
 from fpdf import FPDF
 from datetime import datetime
 import io
+from pathlib import Path
+
+from lang_ctx import get_lang
+from translate_server import tx
+
+# Turkish letters (s, g, i with marks) are not in the PDF's built-in font, so Turkish uses a Unicode font.
+# DejaVu Sans ships inside matplotlib, which your app already installs. If it is missing we fall back to
+# the built-in font and print the Turkish letters without their marks, so nothing is ever dropped.
+def _find_unicode_fonts():
+    try:
+        import matplotlib
+        d = Path(matplotlib.get_data_path()) / "fonts" / "ttf"
+        files = {"": d / "DejaVuSans.ttf", "B": d / "DejaVuSans-Bold.ttf", "I": d / "DejaVuSans-Oblique.ttf"}
+        return files if all(p.exists() for p in files.values()) else None
+    except Exception:
+        return None
+
+_TR_ASCII = str.maketrans("şŞğĞıİ", "sSgGiI")
+
+PDF_TR = {
+    "Medicine Management Summary": "İlaç Yönetimi Özeti",
+    "Generated": "Oluşturulma",
+    "at": "saat",
+    "Diagnosis Summary": "Tanı Özeti",
+    "Medicine Cabinet Plan": "İlaç Dolabı Planı",
+    "Keep": "Sakla", "Dispose": "At", "Unclear": "Belirsiz", "Get from Pharmacy": "Eczaneden Al",
+    "[OK] Keep & Take As Directed": "[OK] Sakla ve Belirtildiği Gibi Kullan",
+    "[X] Dispose (Expired)": "[X] At (Süresi Dolmuş)",
+    "[?] Unclear - Needs Attention": "[?] Belirsiz - Dikkat Gerekiyor",
+    "[!] Get From Pharmacy": "[!] Eczaneden Alın",
+    "Follow-up Appointments": "Kontrol Randevuları",
+    "Warning Signs - Go To ER If:": "Uyarı Belirtileri - Şu Durumlarda Acile Gidin:",
+    "Drug Interaction Alerts": "İlaç Etkileşimi Uyarıları",
+    "This document is for reference only and does not replace medical advice. Always confirm with your doctor or pharmacist.":
+        "Bu belge yalnızca bilgi amaçlıdır ve tıbbi tavsiyenin yerini tutmaz. Her zaman doktorunuza veya eczacınıza danışın.",
+    "Prescribed Dosage": "Reçeteli Doz", "Prescribed Frequency": "Reçeteli Sıklık", "Expiration Date": "Son Kullanma Tarihi",
+    "Clinical Warning": "Klinik Uyarı", "Warning": "Uyarı", "Reason": "Neden", "Action": "Yapılacak",
+    "Dosage": "Doz", "Frequency": "Sıklık", "Purpose": "Amaç", "Unknown": "Bilinmiyor", "N/A": "Yok",
+}
+TR_MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+
+
+def _t(text):
+    """PDF wording for the current language."""
+    return PDF_TR.get(text, text) if get_lang() == "tr" else text
 
 class SummaryPDF(FPDF):
+    font_name = 'Helvetica'
+    unicode_ok = False
+
+    def use_fonts(self):
+        """Switch to the Unicode font for Turkish when it is available."""
+        if get_lang() == "tr":
+            files = _find_unicode_fonts()
+            if files:
+                self.add_font("DejaVu", "", str(files[""]))
+                self.add_font("DejaVu", "B", str(files["B"]))
+                self.add_font("DejaVu", "I", str(files["I"]))
+                self.font_name = "DejaVu"
+                self.unicode_ok = True
+
     def header(self):
         self.set_fill_color(30, 58, 95)
         self.rect(0, 0, 210, 28, 'F')
         self.set_text_color(255, 255, 255)
-        self.set_font('Helvetica', 'B', 18)
+        self.set_font(self.font_name, 'B', 18)
         self.set_y(8)
         self.cell(0, 10, 'Cabinet Clear', ln=True, align='C')
-        self.set_font('Helvetica', '', 9)
-        self.cell(0, 6, 'Medicine Management Summary', ln=True, align='C')
+        self.set_font(self.font_name, '', 9)
+        self.cell(0, 6, _safe(_t('Medicine Management Summary'), self.unicode_ok), ln=True, align='C')
         self.set_text_color(0, 0, 0)
         self.ln(8)
 
     def footer(self):
         self.set_y(-15)
-        self.set_font('Helvetica', 'I', 7)
+        self.set_font(self.font_name, 'I', 7)
         self.set_text_color(150, 150, 150)
-        self.cell(0, 10, 'This document is for reference only and does not replace medical advice. Always confirm with your doctor or pharmacist.', align='C')
+        self.cell(0, 10, _safe(_t('This document is for reference only and does not replace medical advice. Always confirm with your doctor or pharmacist.'), self.unicode_ok), align='C')
 
 
-def _safe(text) -> str:
+def _safe(text, unicode_ok=False) -> str:
     """Strip/replace characters that FPDF's core Helvetica font can't encode."""
     if text is None:
         return ""
@@ -45,7 +104,10 @@ def _safe(text) -> str:
     }
     for bad, good in replacements.items():
         text = text.replace(bad, good)
-    # Final safety net: drop any remaining non-Latin-1 characters
+    if unicode_ok:
+        return text
+    # Built-in font: Turkish letters lose their marks (s, g, i) instead of being dropped
+    text = text.translate(_TR_ASCII)
     return text.encode("latin-1", "ignore").decode("latin-1")
 
 
@@ -55,32 +117,39 @@ def generate_summary_pdf(discharge_data: dict, cross_ref_result: dict, interacti
     interactions = interactions or []
 
     pdf = SummaryPDF()
+    pdf.use_fonts()
+    U = pdf.unicode_ok
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=20)
 
     # Date
-    pdf.set_font('Helvetica', '', 9)
+    pdf.set_font(pdf.font_name, '', 9)
     pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 6, _safe(f"Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}"), ln=True, align='R')
+    now = datetime.now()
+    if get_lang() == "tr":
+        stamp = f"{_t('Generated')}: {now.day} {TR_MONTHS[now.month - 1]} {now.year} {_t('at')} {now.strftime('%H:%M')}"
+    else:
+        stamp = f"Generated: {now.strftime('%B %d, %Y at %I:%M %p')}"
+    pdf.cell(0, 6, _safe(stamp, U), ln=True, align='R')
     pdf.ln(2)
 
     # Diagnosis
-    pdf.set_font('Helvetica', 'B', 13)
+    pdf.set_font(pdf.font_name, 'B', 13)
     pdf.set_text_color(30, 58, 95)
-    pdf.cell(0, 8, 'Diagnosis Summary', ln=True)
+    pdf.cell(0, 8, _safe(_t('Diagnosis Summary'), U), ln=True)
     pdf.set_draw_color(30, 58, 95)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.ln(3)
-    pdf.set_font('Helvetica', '', 10)
+    pdf.set_font(pdf.font_name, '', 10)
     pdf.set_text_color(0, 0, 0)
-    pdf.multi_cell(0, 6, _safe(discharge_data.get('diagnosis_summary', 'N/A')))
+    pdf.multi_cell(0, 6, _safe(tx(discharge_data.get('diagnosis_summary', _t('N/A'))), U), new_x="LMARGIN", new_y="NEXT")
     pdf.ln(4)
 
     # Medicine Plan
     summary = cross_ref_result.get('summary', {}) or {}
-    pdf.set_font('Helvetica', 'B', 13)
+    pdf.set_font(pdf.font_name, 'B', 13)
     pdf.set_text_color(30, 58, 95)
-    pdf.cell(0, 8, 'Medicine Cabinet Plan', ln=True)
+    pdf.cell(0, 8, _safe(_t('Medicine Cabinet Plan'), U), ln=True)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.ln(3)
 
@@ -97,31 +166,31 @@ def generate_summary_pdf(discharge_data: dict, cross_ref_result: dict, interacti
         pdf.set_fill_color(*color)
         pdf.set_text_color(255, 255, 255)
         pdf.set_xy(x_start, pdf.get_y())
-        pdf.set_font('Helvetica', 'B', 16)
+        pdf.set_font(pdf.font_name, 'B', 16)
         pdf.cell(box_w - 2, 10, str(count), ln=False, align='C', fill=True)
         pdf.set_xy(x_start, pdf.get_y() + 10)
-        pdf.set_font('Helvetica', '', 7)
-        pdf.cell(box_w - 2, 6, label, ln=False, align='C', fill=True)
+        pdf.set_font(pdf.font_name, '', 7)
+        pdf.cell(box_w - 2, 6, _safe(_t(label), U), ln=False, align='C', fill=True)
         x_start += box_w
     pdf.ln(20)
 
     def section(title, items, color, fields):
         if not items:
             return
-        pdf.set_font('Helvetica', 'B', 11)
+        pdf.set_font(pdf.font_name, 'B', 11)
         pdf.set_text_color(*color)
-        pdf.cell(0, 7, _safe(title), ln=True)
+        pdf.cell(0, 7, _safe(_t(title), U), ln=True)
         pdf.set_text_color(0, 0, 0)
         for item in items:
             pdf.set_fill_color(245, 245, 245)
-            pdf.set_font('Helvetica', 'B', 10)
-            pdf.cell(0, 6, _safe(item.get('drug_name', 'Unknown')), ln=True, fill=True)
-            pdf.set_font('Helvetica', '', 9)
+            pdf.set_font(pdf.font_name, 'B', 10)
+            pdf.cell(0, 6, _safe(item.get('drug_name', _t('Unknown')), U), ln=True, fill=True)
+            pdf.set_font(pdf.font_name, '', 9)
             for field in fields:
                 val = item.get(field)
                 if val:
-                    label = field.replace('_', ' ').title()
-                    pdf.multi_cell(0, 5, _safe(f"  {label}: {val}"))
+                    label = _t(field.replace('_', ' ').title())
+                    pdf.multi_cell(0, 5, _safe(f"  {label}: {tx(val)}", U), new_x="LMARGIN", new_y="NEXT")
             pdf.ln(2)
 
     section('[OK] Keep & Take As Directed', cross_ref_result.get('keep', []),
@@ -136,45 +205,45 @@ def generate_summary_pdf(discharge_data: dict, cross_ref_result: dict, interacti
     # Follow-up appointments
     followups = discharge_data.get('follow_up_appointments', [])
     if followups:
-        pdf.set_font('Helvetica', 'B', 13)
+        pdf.set_font(pdf.font_name, 'B', 13)
         pdf.set_text_color(30, 58, 95)
-        pdf.cell(0, 8, 'Follow-up Appointments', ln=True)
+        pdf.cell(0, 8, _safe(_t('Follow-up Appointments'), U), ln=True)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
         pdf.ln(3)
-        pdf.set_font('Helvetica', '', 10)
+        pdf.set_font(pdf.font_name, '', 10)
         pdf.set_text_color(0, 0, 0)
         for f in followups:
-            pdf.cell(0, 6, _safe(f"- {f.get('type', '')} - {f.get('timeframe', '')}"), ln=True)
+            pdf.cell(0, 6, _safe(f"- {f.get('type', '')} - {f.get('timeframe', '')}", U), ln=True)
         pdf.ln(4)
 
     # Warning signs
     warnings = discharge_data.get('warning_signs', [])
     if warnings:
-        pdf.set_font('Helvetica', 'B', 13)
+        pdf.set_font(pdf.font_name, 'B', 13)
         pdf.set_text_color(220, 38, 38)
-        pdf.cell(0, 8, 'Warning Signs - Go To ER If:', ln=True)
+        pdf.cell(0, 8, _safe(_t('Warning Signs - Go To ER If:'), U), ln=True)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
         pdf.ln(3)
-        pdf.set_font('Helvetica', '', 10)
+        pdf.set_font(pdf.font_name, '', 10)
         pdf.set_text_color(0, 0, 0)
         for w in warnings:
-            pdf.cell(0, 6, _safe(f"- {w}"), ln=True)
+            pdf.cell(0, 6, _safe(f"- {w}", U), ln=True)
         pdf.ln(4)
 
     # Drug interactions
     if interactions:
-        pdf.set_font('Helvetica', 'B', 13)
+        pdf.set_font(pdf.font_name, 'B', 13)
         pdf.set_text_color(180, 83, 9)
-        pdf.cell(0, 8, 'Drug Interaction Alerts', ln=True)
+        pdf.cell(0, 8, _safe(_t('Drug Interaction Alerts'), U), ln=True)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
         pdf.ln(3)
-        pdf.set_font('Helvetica', '', 10)
+        pdf.set_font(pdf.font_name, '', 10)
         pdf.set_text_color(0, 0, 0)
         for interaction in interactions:
-            pdf.set_font('Helvetica', 'B', 10)
-            pdf.cell(0, 6, _safe(f"{interaction.get('drug_a','')} + {interaction.get('drug_b','')}"), ln=True)
-            pdf.set_font('Helvetica', '', 9)
-            pdf.multi_cell(0, 5, _safe(f"  {interaction.get('message','')}"))
+            pdf.set_font(pdf.font_name, 'B', 10)
+            pdf.cell(0, 6, _safe(f"{interaction.get('drug_a','')} + {interaction.get('drug_b','')}", U), ln=True)
+            pdf.set_font(pdf.font_name, '', 9)
+            pdf.multi_cell(0, 5, _safe(f"  {tx(interaction.get('message',''))}", U), new_x="LMARGIN", new_y="NEXT")
             pdf.ln(2)
 
     return bytes(pdf.output())

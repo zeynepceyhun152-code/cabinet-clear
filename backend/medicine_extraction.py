@@ -4,12 +4,13 @@ import base64
 from datetime import datetime
 from dotenv import load_dotenv
 import anthropic
+from lang_ctx import language_instruction
 
 load_dotenv()
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 MODEL = "claude-sonnet-4-6"
 
-MEDICINE_PROMPT = """You are helping a caregiver identify medicine information from a photo or text of a medicine label or box.
+_MEDICINE_PROMPT_TEMPLATE = """You are helping a caregiver identify medicine information from a photo or text of a medicine label or box.
 
 Extract the following as a JSON object with EXACTLY this structure:
 
@@ -24,10 +25,15 @@ Extract the following as a JSON object with EXACTLY this structure:
   "confidence_notes": "explain if anything was hard to read, unclear, or missing"
 }
 
-Today's date is """ + datetime.now().strftime("%Y-%m-%d") + """.
+Today's date is {today}.
 Use today's date to determine if the medication is expired.
 Output ONLY the JSON object, no markdown, no extra text.
 """
+
+
+def medicine_prompt():
+    """Built for every call, so the date is today's date and the language is the request's language."""
+    return _MEDICINE_PROMPT_TEMPLATE.replace("{today}", datetime.now().strftime("%Y-%m-%d")) + language_instruction()
 
 def _parse_json(text):
     text = text.strip()
@@ -57,7 +63,7 @@ def extract_medicine_from_image(file_path: str, mime_type: str = "image/jpeg") -
                         "data": b64_data
                     }
                 },
-                {"type": "text", "text": MEDICINE_PROMPT}
+                {"type": "text", "text": medicine_prompt()}
             ]
         }]
     )
@@ -67,6 +73,6 @@ def extract_medicine_from_text(label_text: str) -> dict:
     response = client.messages.create(
         model=MODEL,
         max_tokens=1000,
-        messages=[{"role": "user", "content": f"{MEDICINE_PROMPT}\n\n{label_text}"}]
+        messages=[{"role": "user", "content": f"{medicine_prompt()}\n\n{label_text}"}]
     )
     return _parse_json(response.content[0].text)

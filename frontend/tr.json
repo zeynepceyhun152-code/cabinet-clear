@@ -1,0 +1,385 @@
+{
+ "strings": {
+  "Sign in to Save Your History": "Geçmişinizi Kaydetmek İçin Giriş Yapın",
+  "Optional — you can also": "İsteğe bağlı — ayrıca",
+  "skip and use without an account →": "atlayıp hesapsız kullanabilirsiniz →",
+  "Username": "Kullanıcı adı",
+  "Password": "Şifre",
+  "Log In": "Giriş Yap",
+  "Sign Up": "Kayıt Ol",
+  "AI Health Assistant": "Yapay Zekâ Sağlık Asistanı",
+  "Understand your discharge letter and know exactly what to keep, take, or replace.": "Taburcu belgenizi anlayın ve hangi ilacı saklayacağınızı, kullanacağınızı veya yenileyeceğinizi tam olarak öğrenin.",
+  "Discharge Letter": "Taburcu Belgesi",
+  "Scan Medicines": "İlaçları Tara",
+  "Your Plan": "Planınız",
+  "🕒 View My History": "🕒 Geçmişimi Göster",
+  "Past Cabinet Checks": "Önceki Dolap Kontrolleri",
+  "Your Discharge Letter": "Taburcu Belgeniz",
+  "Paste or upload the letter your hospital gave you when you were discharged. We'll turn it into plain language in seconds.": "Hastaneden taburcu olurken size verilen belgeyi yapıştırın veya yükleyin. Saniyeler içinde sade bir dile çevireceğiz.",
+  "Paste letter text": "Belge metnini yapıştırın",
+  "or upload a file": "veya dosya yükleyin",
+  "Tap to upload": "Yüklemek için dokunun",
+  "PDF, JPG, or PNG · Max 10MB": "PDF, JPG veya PNG · En fazla 10 MB",
+  "📄 PDF works great": "📄 PDF çok iyi çalışır",
+  "📷 Photo of letter is fine": "📷 Belgenin fotoğrafı da olur",
+  "Read My Letter →": "Belgemi Oku →",
+  "Letter Summary": "Belge Özeti",
+  "✅ Letter read! Now let's check your medicine cabinet below →": "✅ Belge okundu! Şimdi aşağıda ilaç dolabınızı kontrol edelim →",
+  "Scan my medicine cabinet →": "İlaç dolabımı tara →",
+  "Medicine Cabinet": "İlaç Dolabı",
+  "added": "eklendi",
+  "Add each medicine one at a time.": "Her ilacı tek tek ekleyin.",
+  "Take a photo of the front label and a separate photo of the expiry date if they're on different sides of the box.": "Ön etiketin fotoğrafını çekin; son kullanma tarihi kutunun başka bir yüzündeyse onun için ayrı bir fotoğraf çekin.",
+  "Add a medicine": "İlaç ekle",
+  "✅ Medicine scanned! Add more, or hit \"Check my cabinet\" when you're done →": "✅ İlaç tarandı! Daha fazla ekleyin veya işiniz bitince \"Dolabımı kontrol et\" düğmesine basın →",
+  "Check my cabinet →": "Dolabımı kontrol et →",
+  "Your Medicine Plan": "İlaç Planınız",
+  "Keep": "Sakla",
+  "Dispose": "At",
+  "Unclear": "Belirsiz",
+  "Get from pharmacy": "Eczaneden alın",
+  "For reference only": "Yalnızca bilgi amaçlıdır",
+  "This tool organizes information from your documents. It does not make medical decisions. Always confirm what medications to take with your doctor or pharmacist.": "Bu araç, belgelerinizdeki bilgileri düzenler. Tıbbi karar vermez. Hangi ilaçları kullanacağınızı her zaman doktorunuza veya eczacınıza danışın.",
+  "💊 Add previous medications": "💊 Önceki ilaçları ekle",
+  "Previous Medications": "Önceki İlaçlar",
+  "What was taken before the hospital stay?": "Hastaneye yatmadan önce hangi ilaçlar kullanılıyordu?",
+  "Type or paste the list, one medicine per line, with the strength and how often if you know it. You can add your discharge letter now, later, or skip it.": "Listeyi yazın veya yapıştırın; her satırda bir ilaç olsun, biliyorsanız dozunu ve ne sıklıkta kullanıldığını da ekleyin. Taburcu belgenizi şimdi veya daha sonra ekleyebilir ya da atlayabilirsiniz.",
+  "Pick from your history": "Geçmişinizden seçin",
+  "or type a list": "veya bir liste yazın",
+  "Previous medicines": "Önceki ilaçlar",
+  "Save my list →": "Listemi kaydet →",
+  "Skip the letter and scan my medicines →": "Belgeyi atla, ilaçlarımı tara →",
+  "What changed?": "Ne değişti?",
+  "New": "Yeni",
+  "Stopped": "Bırakıldı",
+  "Changed": "Değişti",
+  "Ask pharmacist": "Eczacıya sorun",
+  "This compares what the documents say. It does not decide which treatment is correct. Confirm every change with your doctor or pharmacist.": "Bu, belgelerde yazanları karşılaştırır. Hangi tedavinin doğru olduğuna karar vermez. Her değişikliği doktorunuz veya eczacınızla doğrulayın.",
+  "Explain it for me": "Bana açıkla",
+  "Tell us how you're feeling.": "Nasıl hissettiğinizi söyleyin.",
+  "We'll explain your letter in the way that helps most. Every medicine, dose and warning sign stays exactly as your letter says.": "Belgenizi en çok işinize yarayacak şekilde açıklayacağız. Her ilaç, doz ve uyarı işareti belgenizde yazdığı gibi kalır.",
+  "How overwhelmed do you feel right now?": "Şu anda kendinizi ne kadar bunalmış hissediyorsunuz?",
+  "Calm": "Sakin",
+  "Very overwhelmed": "Çok bunalmış",
+  "How well did you understand what the doctor said?": "Doktorun söylediklerini ne kadar anladınız?",
+  "Not at all": "Hiç",
+  "Completely": "Tamamen",
+  "Not sure? Skip the numbers and we'll use a standard explanation.": "Emin değil misiniz? Sayıları atlayın, standart bir açıklama kullanalım.",
+  "Explain it for me →": "Bana açıkla →",
+  "Skip. Scan my medicines instead →": "Atla. Bunun yerine ilaçlarımı tara →",
+  "Paste the text from your hospital discharge letter here…": "Hastane taburcu belgenizdeki metni buraya yapıştırın…",
+  "e.g. Lisinopril 10 mg once daily Metformin 500 mg twice daily": "ör. Lisinopril 10 mg günde bir kez\nMetformin 500 mg günde iki kez",
+  "Account created! You can now log in.": "Hesap oluşturuldu! Şimdi giriş yapabilirsiniz.",
+  "Appointments": "Randevular",
+  "Ask your pharmacist": "Eczacınıza sorun",
+  "Checking clarity...": "Netlik kontrol ediliyor...",
+  "Checking your cabinet…": "Dolabınız kontrol ediliyor…",
+  "Do this first": "Önce şunları yapın",
+  "Follow-up": "Takip",
+  "Get help right away if": "Şu durumlarda hemen yardım alın",
+  "Good to know": "Bilmekte fayda var",
+  "Make sure the label is fully in frame and well lit": "Etiketin tamamen kadrajda ve iyi aydınlatılmış olduğundan emin olun",
+  "Medications": "İlaçlar",
+  "New on the discharge list": "Taburcu belgesinde yeni",
+  "On the old list, not the new one": "Eski listede var, yenisinde yok",
+  "Please add at least one photo first.": "Lütfen önce en az bir fotoğraf ekleyin.",
+  "Please paste the letter text or upload a file.": "Lütfen belge metnini yapıştırın veya bir dosya yükleyin.",
+  "Please read your discharge letter first.": "Lütfen önce taburcu belgenizi okutun.",
+  "Please run your cabinet analysis first.": "Lütfen önce dolap analizinizi çalıştırın.",
+  "Please sign in first to view history.": "Geçmişi görmek için lütfen önce giriş yapın.",
+  "Please supply both username and password.": "Lütfen hem kullanıcı adı hem şifre girin.",
+  "Questions to ask your doctor or pharmacist": "Doktorunuza veya eczacınıza soracağınız sorular",
+  "Read more from trusted sources": "Güvenilir kaynaklardan daha fazla okuyun",
+  "Reading your letter…": "Belgeniz okunuyor…",
+  "Reading your list…": "Listeniz okunuyor…",
+  "Retry": "Tekrar dene",
+  "Same as before": "Öncekiyle aynı",
+  "Scan this medicine →": "Bu ilacı tara →",
+  "Scanning…": "Taranıyor…",
+  "Shown in the standard format, straight from your letter.": "Belgenizden alınan standart biçimde gösteriliyor.",
+  "Still unsure? Write down your questions and ask your doctor or pharmacist before you leave.": "Hâlâ emin değil misiniz? Sorularınızı yazın ve ayrılmadan önce doktorunuza veya eczacınıza sorun.",
+  "Type or paste your previous medicines first.": "Lütfen önce önceki ilaçlarınızı yazın veya yapıştırın.",
+  "Use": "Kullan",
+  "We couldn't find any medicines in that text. Try one per line, with the strength and how often.": "Bu metinde hiç ilaç bulamadık. Her satıra bir ilaç, dozu ve sıklığıyla birlikte yazmayı deneyin.",
+  "What happened": "Ne oldu",
+  "Writing your explanation…": "Açıklamanız hazırlanıyor…",
+  "Your medicines": "İlaçlarınız",
+  "expiry date": "son kullanma tarihi",
+  "front label": "ön etiket",
+  "(medicine name) +": "(ilacın adı) +",
+  "(often on a different side of the box)": "(çoğu zaman kutunun başka bir yüzünde)",
+  "↔ Changed": "↔ Değişti",
+  "⚠ Interaction": "⚠ Etkileşim",
+  "⚠️ Photo unclear — try again": "⚠️ Fotoğraf net değil — tekrar deneyin",
+  "⚠️ Warning Signs — Ranked by Urgency": "⚠️ Uyarı Belirtileri — Aciliyet Sırasına Göre",
+  "⚡ ER within 2hrs": "⚡ 2 saat içinde acil servis",
+  "✓ Same": "✓ Aynı",
+  "✓ Scanned": "✓ Tarandı",
+  "✓ Front added": "✓ Ön yüz eklendi",
+  "✓ Expiry added": "✓ Son kullanma tarihi eklendi",
+  "✕ Stopped": "✕ Bırakıldı",
+  "＋ New": "＋ Yeni",
+  "👁 Monitor": "👁 İzleyin",
+  "📄 Download PDF Summary": "📄 PDF Özetini İndir",
+  "📅 Expiry date": "📅 Son kullanma tarihi",
+  "📷 Front label": "📷 Ön etiket",
+  "📸 Take 2 photos:": "📸 2 fotoğraf çekin:",
+  "🔍 CNN attention map — red areas are what was hard to read": "🔍 CNN dikkat haritası — kırmızı alanlar okunması zor olan yerlerdir",
+  "🚨 Call 911": "🚨 112'yi arayın",
+  "Needs attention": "Dikkat gerekiyor",
+  "✓ Keep": "✓ Sakla",
+  "✕ Expired": "✕ Süresi dolmuş",
+  "? Unclear": "? Belirsiz",
+  "⚠ Missing": "⚠ Eksik",
+  "Unknown": "Bilinmiyor",
+  "Valid": "Geçerli",
+  "Expired": "Süresi dolmuş",
+  "not found": "bulunamadı",
+  "No past records yet.": "Henüz geçmiş kayıt yok.",
+  "No diagnosis recorded": "Tanı kaydedilmemiş",
+  "⚠️ We couldn't confirm this medicine safely. Take it to your pharmacist — show them this screen and they'll advise you in minutes.": "⚠️ Bu ilacı güvenli bir şekilde doğrulayamadık. Eczacınıza götürün — bu ekranı gösterin, dakikalar içinde size yardımcı olacaktır.",
+  "monitor at home": "evde izleyin",
+  "Do not exceed recommended dose. Check other medications for hidden acetaminophen content.": "Önerilen dozu aşmayın. Diğer ilaçlarda gizli parasetamol (asetaminofen) bulunup bulunmadığını kontrol edin.",
+  "Take with food. Avoid if stomach ulcer history.": "Yemekle birlikte alın. Mide ülseri öyküsü varsa kullanmayın.",
+  "Monitor heart rate. Shake inhaler before use.": "Kalp atış hızını izleyin. Kullanmadan önce inhaleri çalkalayın.",
+  "Complete the full course even if feeling better.": "Daha iyi hissetseniz bile kürü tamamlayın.",
+  "Do not stop suddenly. Take with food.": "Aniden bırakmayın. Yemekle birlikte alın.",
+  "Take with food to avoid nausea.": "Mide bulantısını önlemek için yemekle birlikte alın.",
+  "Taking ibuprofen with prednisolone significantly increases risk of stomach bleeding. Take with food and inform your doctor.": "İbuprofeni prednizolonla birlikte almak mide kanaması riskini önemli ölçüde artırır. Yemekle birlikte alın ve doktorunuza bildirin.",
+  "Taking ibuprofen with aspirin can reduce aspirin's effectiveness and increase bleeding risk.": "İbuprofeni aspirinle birlikte almak aspirinin etkisini azaltabilir ve kanama riskini artırabilir.",
+  "Aspirin can increase bleeding risk when taken with warfarin. Contact your doctor immediately.": "Aspirin, varfarinle birlikte alındığında kanama riskini artırabilir. Hemen doktorunuza başvurun.",
+  "Ibuprofen can reduce kidney function and affect metformin levels. Monitor closely.": "İbuprofen böbrek fonksiyonunu azaltabilir ve metformin düzeylerini etkileyebilir. Yakından izleyin.",
+  "Ibuprofen can reduce the effectiveness of lisinopril and affect kidney function.": "İbuprofen lisinoprilin etkinliğini azaltabilir ve böbrek fonksiyonunu etkileyebilir.",
+  "Ibuprofen may reduce the blood pressure-lowering effect of metoprolol.": "İbuprofen metoprololün tansiyon düşürücü etkisini azaltabilir.",
+  "Ibuprofen can reduce the effectiveness of furosemide and affect kidney function.": "İbuprofen furosemidin etkinliğini azaltabilir ve böbrek fonksiyonunu etkileyebilir.",
+  "Increased risk of stomach bleeding when taken together. Take with food.": "Birlikte alındığında mide kanaması riski artar. Yemekle birlikte alın.",
+  "Amoxicillin may increase the blood-thinning effect of warfarin. Monitor closely.": "Amoksisilin varfarinin kan sulandırıcı etkisini artırabilir. Yakından izleyin.",
+  "High doses of acetaminophen can increase bleeding risk with warfarin. Do not exceed recommended dose.": "Yüksek dozda parasetamol (asetaminofen) varfarinle birlikte kanama riskini artırabilir. Önerilen dozu aşmayın.",
+  "Inform your doctor or pharmacist about this combination.": "Bu kombinasyon hakkında doktorunuza veya eczacınıza bilgi verin.",
+  "Discuss with your pharmacist.": "Eczacınızla konuşun.",
+  "Could not read label clearly": "Etiket net okunamadı",
+  "Please retake a clearer photo, or check the label manually.": "Lütfen daha net bir fotoğraf çekin veya etiketi elle kontrol edin.",
+  "Expiration date not found on label": "Etikette son kullanma tarihi bulunamadı",
+  "Check the box or packaging for an expiration date before using.": "Kullanmadan önce kutuda veya ambalajda son kullanma tarihini kontrol edin.",
+  "This medication is expired and should be safely disposed of.": "Bu ilacın son kullanma tarihi geçmiş; güvenli bir şekilde atılmalıdır.",
+  "✅ Keep — this matches your discharge letter. Take as directed.": "✅ Sakla — bu, taburcu belgenizle eşleşiyor. Belirtildiği şekilde kullanın.",
+  "Not in your current discharge letter — keep only if prescribed for another ongoing condition.": "Güncel taburcu belgenizde yok — yalnızca devam eden başka bir rahatsızlık için reçete edilmişse saklayın.",
+  "⚠️ Not found in your cabinet — you may need to pick this up from the pharmacy.": "⚠️ Dolabınızda bulunamadı — bunu eczaneden almanız gerekebilir.",
+  "This tool organizes information only. It does not replace medical advice. Always confirm medication decisions with your doctor or pharmacist.": "Bu araç yalnızca bilgileri düzenler. Tıbbi tavsiyenin yerini tutmaz. İlaçlarla ilgili kararları her zaman doktorunuza veya eczacınıza danışın.",
+  "on the earlier list, not on the new list": "eski listede var, yeni listede yok",
+  "new on the discharge list": "taburcu listesinde yeni",
+  "medication name missing or unreadable": "ilaç adı eksik veya okunamıyor",
+  "A medication name could not be read. Please check the original document.": "Bir ilaç adı okunamadı. Lütfen orijinal belgeyi kontrol edin.",
+  "immediate-release vs extended-release may differ": "hızlı salımlı ile uzatılmış salımlı form farklı olabilir",
+  "dose missing or unreadable on one list": "doz listelerden birinde eksik veya okunamıyor",
+  "how often to take it is missing or unreadable on one list": "kullanım sıklığı listelerden birinde eksik veya okunamıyor",
+  "one list gives a schedule and the other only says 'as needed'": "bir liste düzenli program veriyor, diğeri yalnızca 'gerektiğinde' diyor",
+  "tapering or multi-step dosing: compare the full instructions": "kademeli azaltma veya çok adımlı dozlama: tüm talimatları karşılaştırın",
+  "number of tablets per dose is stated on only one list": "doz başına tablet sayısı yalnızca bir listede belirtilmiş",
+  "Here is what your letter says, one part at a time.": "Belgenizde yazanlar, bölüm bölüm şöyle.",
+  "Your letter did not include a clear summary.": "Belgenizde net bir özet yoktu.",
+  "Your letter does not say what this is for. Ask your pharmacist.": "Belgenizde bunun ne için kullanıldığı yazmıyor. Eczacınıza sorun.",
+  "Your letter does not say. Ask your pharmacist.": "Belgenizde yazmıyor. Eczacınıza sorun.",
+  "Unknown medicine": "Bilinmeyen ilaç",
+  "Medicine safety": "İlaç güvenliği",
+  "Asthma": "Astım",
+  "Appendix surgery": "Apandisit ameliyatı",
+  "Heart failure": "Kalp yetmezliği",
+  "Type 2 diabetes": "Tip 2 diyabet",
+  "Newborn care": "Yenidoğan bakımı",
+  "Broken bones and casts": "Kırıklar ve alçı",
+  "General education pages from hospitals, health systems, professional societies and government. They are not advice about your own situation. Ask your care team about that.": "Hastanelerin, sağlık kuruluşlarının, meslek derneklerinin ve devletin genel eğitim sayfaları. Kendi durumunuz için tavsiye değildir; bunu sağlık ekibinize sorun. Not: bu sayfalar İngilizcedir.",
+  "Don't be tempted to use expired medicines": "Don't be tempted to use expired medicines (İngilizce)",
+  "Disposal of unused medicines: what you should know": "Disposal of unused medicines: what you should know (İngilizce)",
+  "Asthma in children": "Asthma in children (İngilizce)",
+  "Appendectomy: what to expect at home": "Appendectomy: what to expect at home (İngilizce)",
+  "Appendectomy: aftercare": "Appendectomy: aftercare (İngilizce)",
+  "Heart failure: symptoms, stages and treatment": "Heart failure: symptoms, stages and treatment (İngilizce)",
+  "What is heart failure? (fact sheet, PDF)": "What is heart failure? (fact sheet, PDF) (İngilizce)",
+  "Type 2 diabetes: symptoms, causes and treatment": "Type 2 diabetes: symptoms, causes and treatment (İngilizce)",
+  "Jaundice in newborns": "Jaundice in newborns (İngilizce)",
+  "Jaundice in newborns: symptoms, causes and treatment": "Jaundice in newborns: symptoms, causes and treatment (İngilizce)",
+  "Distal radius fractures (broken wrist)": "Distal radius fractures (broken wrist) (İngilizce)",
+  "Caring for your child's cast or splint": "Caring for your child's cast or splint (İngilizce)"
+ },
+ "patterns": [
+  {
+   "re": "^Welcome back, (.+)!$",
+   "tr": "Tekrar hoş geldiniz, {1}!"
+  },
+  {
+   "re": "^(\\d+) added$",
+   "tr": "{1} eklendi"
+  },
+  {
+   "re": "^Medicine (\\d+)$",
+   "tr": "İlaç {1}"
+  },
+  {
+   "re": "^(\\d+(?:\\.\\d+)?)% clear$",
+   "tr": "%{1} net"
+  },
+  {
+   "re": "^(\\d+) medicines?: (.+)$",
+   "tr": "{1} ilaç: {2}"
+  },
+  {
+   "re": "^(Valid|Expired|Unclear) · EXP: (.+)$",
+   "tr": "{t1} · SKT: {t2}"
+  },
+  {
+   "re": "^EXP: (.+)$",
+   "tr": "SKT: {1}"
+  },
+  {
+   "re": "^Take: (.+)$",
+   "tr": "Kullanım: {f1}"
+  },
+  {
+   "re": "^Purpose: (.+)$",
+   "tr": "Amaç: {1}"
+  },
+  {
+   "re": "^⚕️ Drug Interaction Alerts — (\\d+)$",
+   "tr": "⚕️ İlaç Etkileşimi Uyarıları — {1}"
+  },
+  {
+   "re": "^⚕️ (.+)$",
+   "tr": "⚕️ {t1}"
+  },
+  {
+   "re": "^(.+) — (\\d+)$",
+   "tr": "{t1} — {2}"
+  },
+  {
+   "re": "^Your letter says: (.+)$",
+   "tr": "Belgenizde şöyle yazıyor: {1}"
+  },
+  {
+   "re": "^Before: (.+)$",
+   "tr": "Önce: {1}"
+  },
+  {
+   "re": "^Now: (.+)$",
+   "tr": "Şimdi: {1}"
+  },
+  {
+   "re": "^Analysis Error: (.*)$",
+   "tr": "Analiz hatası: {1}"
+  },
+  {
+   "re": "^PDF Error: (.*)$",
+   "tr": "PDF hatası: {1}"
+  },
+  {
+   "re": "^Scan failed: (.*)$",
+   "tr": "Tarama başarısız: {1}"
+  },
+  {
+   "re": "^Failed to load history: (.*)$",
+   "tr": "Geçmiş yüklenemedi: {1}"
+  },
+  {
+   "re": "^Something went wrong: (.*)$",
+   "tr": "Bir şeyler ters gitti: {1}"
+  },
+  {
+   "re": "^✅ Saved (\\d+) medicines?\\. Check the list above and remove anything that was read wrongly\\. Then read your discharge letter, or skip it and scan your medicines\\.$",
+   "tr": "✅ {1} ilaç kaydedildi. Yukarıdaki listeyi kontrol edin ve yanlış okunanları silin. Sonra taburcu belgenizi okutun veya atlayıp ilaçlarınızı tarayın."
+  },
+  {
+   "re": "^Your discharge letter prescribes (.+) — please get a new supply from your pharmacist\\.$",
+   "tr": "Taburcu belgenizde {1} yazılı — lütfen eczanenizden yeni bir kutu alın."
+  },
+  {
+   "re": "^The dose of (.+) changed\\. What is the reason, and should the old supply still be used\\?$",
+   "tr": "{1} dozu değişti. Nedeni nedir ve eski stok hâlâ kullanılmalı mı?"
+  },
+  {
+   "re": "^The dose and schedule for (.+) both changed\\. What is the reason\\?$",
+   "tr": "{1} için hem doz hem kullanım programı değişti. Nedeni nedir?"
+  },
+  {
+   "re": "^How often to take (.+) changed\\. What is the reason\\?$",
+   "tr": "{1} ilacının kullanım sıklığı değişti. Nedeni nedir?"
+  },
+  {
+   "re": "^(.+) is not on the new list\\. Was it stopped on purpose, and what should be done with the supply at home\\?$",
+   "tr": "{1} yeni listede yok. Bilerek mi bırakıldı ve evdeki stok ne yapılmalı?"
+  },
+  {
+   "re": "^(.+) is new\\. What is it for, and for how long should it be taken\\?$",
+   "tr": "{1} yeni bir ilaç. Ne için kullanılıyor ve ne kadar süre alınmalı?"
+  },
+  {
+   "re": "^Please ask a pharmacist to confirm (.+?): (.+)\\.$",
+   "tr": "Lütfen eczacıdan {1} için şunları doğrulamasını isteyin: {ts2}."
+  },
+  {
+   "re": "^Is '(.+)' the same medicine as '(.+)'\\? Please confirm with a pharmacist\\.$",
+   "tr": "'{1}' ile '{2}' aynı ilaç mı? Lütfen eczacıdan doğrulayın."
+  },
+  {
+   "re": "^'(.+)' shares an ingredient with '(.+)'\\. Is one replacing the other, and should they never be taken together\\?$",
+   "tr": "'{1}', '{2}' ile ortak bir etken madde içeriyor. Biri diğerinin yerine mi geçiyor ve birlikte hiç alınmamaları mı gerekiyor?"
+  },
+  {
+   "re": "^(.+) appears more than once\\. Please ask a pharmacist which entries apply\\.$",
+   "tr": "{1} birden fazla kez geçiyor. Lütfen hangi kayıtların geçerli olduğunu eczacıya sorun."
+  },
+  {
+   "re": "^dose (.+) → (.+)$",
+   "tr": "doz {1} → {2}"
+  },
+  {
+   "re": "^dose (.+) -> (.+)$",
+   "tr": "doz {1} → {2}"
+  },
+  {
+   "re": "^frequency (.+) → (.+)$",
+   "tr": "sıklık {f1} → {f2}"
+  },
+  {
+   "re": "^frequency (.+) -> (.+)$",
+   "tr": "sıklık {f1} → {f2}"
+  },
+  {
+   "re": "^'(.+)' and '(.+)' look similar but are not identical$",
+   "tr": "'{1}' ve '{2}' benzer görünüyor ama aynı değil"
+  },
+  {
+   "re": "^'(.+)' and '(.+)' share an ingredient$",
+   "tr": "'{1}' ve '{2}' ortak bir etken madde içeriyor"
+  },
+  {
+   "re": "^(.+) appears more than once on a list$",
+   "tr": "{1} bir listede birden fazla kez geçiyor"
+  },
+  {
+   "re": "^different form/salt \\((.+) vs (.+)\\)$",
+   "tr": "farklı form/tuz ({1} ile {2})"
+  },
+  {
+   "re": "^doses use different units \\((.+) vs (.+)\\)$",
+   "tr": "dozlar farklı birimler kullanıyor ({1} ile {2})"
+  },
+  {
+   "re": "^Some of your letter was hard to read \\((.+)\\)\\. Please check this against the original and ask your care team\\.$",
+   "tr": "Belgenizin bazı kısımlarını okumak zordu ({1}). Lütfen bunu orijinaliyle karşılaştırın ve sağlık ekibinize sorun."
+  }
+ ],
+ "freq": [
+  [
+   "x/day",
+   "x/gün"
+  ],
+  [
+   ", as needed",
+   ", gerektiğinde"
+  ],
+  [
+   "as needed",
+   "gerektiğinde"
+  ]
+ ]
+}
