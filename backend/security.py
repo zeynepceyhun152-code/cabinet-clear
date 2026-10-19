@@ -241,7 +241,7 @@ def install(app):
                 return _blocked(request, 413, MSG_TOO_LARGE)
 
         # 2. password guessing
-        if path == "/auth/login" and method == "POST":
+        if (path == "/auth/login" and method == "POST") or (path == "/account" and method == "DELETE"):
             if window.count(f"loginfail:{ip}", 900) >= LIMITS.login_failures_per_15min:
                 return _blocked(request, 429, MSG_LOGIN_LOCK, 900)
         if path == "/auth/register" and method == "POST":
@@ -267,6 +267,7 @@ def install(app):
                     return _blocked(request, 429, MSG_TOO_MANY, wait)
 
         response = await call_next(request)
-        if path == "/auth/login" and method == "POST" and response.status_code == 401:
+        if (path == "/auth/login" and method == "POST" and response.status_code == 401) or \
+           (path == "/account" and method == "DELETE" and response.status_code == 403):
             window.record(f"loginfail:{ip}")
         return response

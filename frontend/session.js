@@ -7,7 +7,7 @@
   var base = window.fetch.bind(window);
   window.fetch = function (input, init) {
     var url = (typeof input === 'string') ? input : (input && input.url) || '';
-    var isHistory = url.indexOf('/history/') !== -1;
+    var isHistory = url.indexOf('/history/') !== -1 || url.indexOf('/account') !== -1;
     var isLogin = url.indexOf('/auth/login') !== -1;
     if (isHistory && token) {
       init = init || {};

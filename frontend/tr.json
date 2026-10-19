@@ -231,7 +231,30 @@
   "The outlines are estimates and names are only what could be read. Always check each one against the real box.": "Çizilen çerçeveler tahminidir; adlar yalnızca okunabilenlerdir. Her birini gerçek kutuyla karşılaştırın.",
   "No packages found. Try a closer, brighter photo.": "Paket bulunamadı. Daha yakından, daha aydınlık bir fotoğraf deneyin.",
   "Please upload a valid image format.": "Lütfen geçerli bir görsel biçimi yükleyin.",
-  "The photo could not be read. Please try again.": "Fotoğraf okunamadı. Lütfen tekrar deneyin."
+  "The photo could not be read. Please try again.": "Fotoğraf okunamadı. Lütfen tekrar deneyin.",
+  "Privacy": "Gizlilik",
+  "Your privacy": "Gizliliğiniz",
+  "What we keep": "Neleri saklıyoruz",
+  "If you use the app without signing in, nothing about you is saved. If you sign in and run a check, we save your letter summary, your medicine list and your cabinet results so you can see them later. We also keep your username and a scrambled version of your password, never the password itself.": "Uygulamayı giriş yapmadan kullanırsanız hakkınızda hiçbir şey kaydedilmez. Giriş yapıp bir kontrol çalıştırırsanız, daha sonra görebilmeniz için belge özetinizi, ilaç listenizi ve dolap sonuçlarınızı kaydederiz. Ayrıca kullanıcı adınızı ve şifrenizin karıştırılmış bir halini saklarız; şifrenizin kendisini asla saklamayız.",
+  "Your letters and photos are not stored by us. They are deleted from our server as soon as they have been read.": "Belgeleriniz ve fotoğraflarınız bizde saklanmaz. Okunur okunmaz sunucumuzdan silinir.",
+  "How it is protected": "Nasıl korunuyor",
+  "Saved history is encrypted in our database, and only you can open it after signing in.": "Kayıtlı geçmiş veritabanımızda şifrelenir ve yalnızca siz giriş yaptıktan sonra açabilirsiniz.",
+  "Saved history is protected by your sign-in: only you can open it after signing in.": "Kayıtlı geçmiş girişinizle korunur: yalnızca siz giriş yaptıktan sonra açabilirsiniz.",
+  "What goes to the AI": "Yapay zekâya neler gidiyor",
+  "To read your letter and photos, the app sends them to Anthropic's AI service. Anthropic says it does not train its models on content sent this way by default, and keeps it only for a limited time under its own policy.": "Belgenizi ve fotoğraflarınızı okumak için uygulama bunları Anthropic'in yapay zekâ hizmetine gönderir. Anthropic, bu şekilde gönderilen içeriklerle modellerini varsayılan olarak eğitmediğini ve içeriği kendi politikası uyarınca yalnızca sınırlı bir süre sakladığını belirtiyor.",
+  "Read Anthropic's privacy policy": "Anthropic'in gizlilik politikasını okuyun",
+  "Your choices": "Seçenekleriniz",
+  "You can delete your account and every saved check at any time from the Past Cabinet Checks card.": "Hesabınızı ve kayıtlı tüm kontrolleri istediğiniz zaman “Önceki Dolap Kontrolleri” kartından silebilirsiniz.",
+  "This app gives general information. It is not medical advice. Always confirm with your doctor or pharmacist.": "Bu uygulama genel bilgi verir. Tıbbi tavsiye değildir. Her zaman doktorunuza veya eczacınıza danışın.",
+  "Close": "Kapat",
+  "Delete my account and history": "Hesabımı ve geçmişimi sil",
+  "This permanently deletes your account and every saved check. It cannot be undone.": "Bu işlem hesabınızı ve kayıtlı tüm kontrolleri kalıcı olarak siler. Geri alınamaz.",
+  "Yes, delete everything": "Evet, her şeyi sil",
+  "Cancel": "İptal",
+  "Deleting…": "Siliniyor…",
+  "Please enter your password.": "Lütfen şifrenizi girin.",
+  "Your account and history were deleted.": "Hesabınız ve geçmişiniz silindi.",
+  "Incorrect password.": "Şifre yanlış."
  },
  "patterns": [
   {
@@ -405,6 +428,10 @@
   {
    "re": "^We found (\\d+) packages?\\.$",
    "tr": "{1} paket bulundu."
+  },
+  {
+   "re": "^Delete failed: (.*)$",
+   "tr": "Silme başarısız: {t1}"
   }
  ],
  "freq": [

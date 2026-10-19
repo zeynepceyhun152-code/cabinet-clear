@@ -7,8 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
 from dotenv import load_dotenv
 from starlette.requests import Request
+from starlette.concurrency import run_in_threadpool
 from security import (ALLOWED_ORIGINS, ORIGIN_REGEX, issue_token, user_from_request, valid_username, valid_password,
-                      USERNAME_RULE, PASSWORD_RULE, MSG_OWN_ONLY)
+                      USERNAME_RULE, PASSWORD_RULE, MSG_OWN_ONLY, MSG_EXPIRED)
 
 from extraction import extract_from_text, extract_from_file
 from medicine_extraction import extract_medicine_from_image, extract_medicine_from_text
@@ -16,7 +17,7 @@ from crossreference import cross_reference
 from reconcile import compare_med_lists
 from explain import generate_explanation
 # Import our relational SQLite gateway functions
-from database import register_user, authenticate_user, save_history_record, fetch_user_history
+from database import register_user, authenticate_user, save_history_record, fetch_user_history, delete_user
 
 load_dotenv()
 
@@ -72,7 +73,7 @@ async def register_endpoint(payload: dict):
         return JSONResponse(status_code=400, content={"success": False, "error": USERNAME_RULE})
     if not valid_password(password):
         return JSONResponse(status_code=400, content={"success": False, "error": PASSWORD_RULE})
-    if register_user(username, password):
+    if await run_in_threadpool(register_user, username, password):
         return {"success": True, "message": "User account built successfully"}
     return JSONResponse(status_code=400, content={"success": False, "error": "Username already exists"})
 
@@ -80,7 +81,7 @@ async def register_endpoint(payload: dict):
 async def login_endpoint(payload: dict):
     username = str(payload.get("username", "")).strip()
     password = str(payload.get("password", "")).strip()
-    if authenticate_user(username, password):
+    if await run_in_threadpool(authenticate_user, username, password):
         return {"success": True, "username": username, "token": issue_token(username)}
     return JSONResponse(status_code=401, content={"success": False, "error": "Invalid username or credentials"})
 
@@ -93,7 +94,10 @@ async def save_history_endpoint(request: Request, payload: dict):
     diagnosis = payload.get("diagnosis", "Unknown Diagnosis")
     letter = payload.get("letter_data", {})
     cabinet = payload.get("cabinet_data", {})
-    save_history_record(user, diagnosis, letter, cabinet)
+    try:
+        await run_in_threadpool(save_history_record, user, diagnosis, letter, cabinet)
+    except ValueError:      # the account was deleted
+        return JSONResponse(status_code=401, content={"success": False, "error": MSG_EXPIRED})
     return {"success": True}
 
 @app.get("/history/get/{username}")
@@ -103,7 +107,7 @@ async def get_history_endpoint(username: str, request: Request):
         return JSONResponse(status_code=401, content={"success": False, "error": problem})
     if username.strip().lower() != user:
         return JSONResponse(status_code=403, content={"success": False, "error": MSG_OWN_ONLY})
-    return {"success": True, "data": fetch_user_history(user)}
+    return {"success": True, "data": await run_in_threadpool(fetch_user_history, user)}
 
 # --- EXISTING EXTRACTION AND EVALUATION ENDPOINTS ---
 @app.post("/extract-letter")
@@ -117,11 +121,13 @@ async def extract_letter(file: UploadFile = File(None), text: str = Form(None)):
             if mime not in ALLOWED_MIME_TYPES:
                 return JSONResponse(status_code=400, content={"success": False, "error": "Unsupported type."})
             contents = await file.read()
-            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file.filename.split('.')[-1]}") as tmp:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=_safe_suffix(file.filename)) as tmp:
                 tmp.write(contents)
                 tmp_path = tmp.name
-            result = extract_from_file(tmp_path, mime)
-            os.unlink(tmp_path)
+            try:
+                result = extract_from_file(tmp_path, mime)
+            finally:
+                os.unlink(tmp_path)      # always delete the uploaded letter, even if reading it failed
             return JSONResponse(content={"success": True, "data": result, "input_type": "file", "mime_type": mime})
         return JSONResponse(status_code=400, content={"success": False, "error": "Please provide either a file or text input."})
     except Exception as e:
@@ -138,11 +144,13 @@ async def scan_medicine(file: UploadFile = File(None), text: str = Form(None)):
             if mime not in {"image/jpeg", "image/png", "image/webp"}:
                 return JSONResponse(status_code=400, content={"success": False, "error": "Please upload a valid image format."})
             contents = await file.read()
-            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file.filename.split('.')[-1]}") as tmp:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=_safe_suffix(file.filename)) as tmp:
                 tmp.write(contents)
                 tmp_path = tmp.name
-            result = extract_medicine_from_image(tmp_path, mime)
-            os.unlink(tmp_path)
+            try:
+                result = extract_medicine_from_image(tmp_path, mime)
+            finally:
+                os.unlink(tmp_path)      # always delete the uploaded photo, even if reading it failed
             return JSONResponse(content={"success": True, "data": result})
         return JSONResponse(status_code=400, content={"success": False, "error": "Missing input context data."})
     except Exception as e:
@@ -264,3 +272,30 @@ async def scan_cabinet_endpoint(file: UploadFile = File(...)):
         return JSONResponse(content={"success": True, "data": scan_cabinet(contents)})
     except Exception as e:
         return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+
+
+# --- where is your data stored? (open /health to check) ---
+@app.get("/health")
+async def health_endpoint():
+    import database
+    kind = database.storage_kind()
+    return {"status": "ok", "storage": kind, "permanent": kind == "postgres", "encrypted": database.encryption_enabled()}
+
+
+def _safe_suffix(filename):
+    """A file name from a visitor is never trusted: only a few image and PDF endings are kept."""
+    ext = (filename or "").rsplit(".", 1)[-1].lower()
+    return "." + ext if ext in {"jpg", "jpeg", "png", "webp", "pdf"} else ".bin"
+
+
+# --- DELETE MY ACCOUNT: needs a sign-in token AND the password; removes the account and every saved record ---
+@app.delete("/account")
+async def delete_account_endpoint(request: Request, payload: dict):
+    user, problem = user_from_request(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"success": False, "error": problem})
+    password = str(payload.get("password", "")).strip()
+    if not await run_in_threadpool(authenticate_user, user, password):
+        return JSONResponse(status_code=403, content={"success": False, "error": "Incorrect password."})
+    result = await run_in_threadpool(delete_user, user)
+    return {"success": True, "deleted": result}
