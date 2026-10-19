@@ -6,6 +6,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
 from dotenv import load_dotenv
+from starlette.requests import Request
+from security import (ALLOWED_ORIGINS, ORIGIN_REGEX, issue_token, user_from_request, valid_username, valid_password,
+                      USERNAME_RULE, PASSWORD_RULE, MSG_OWN_ONLY)
 
 from extraction import extract_from_text, extract_from_file
 from medicine_extraction import extract_medicine_from_image, extract_medicine_from_text
@@ -21,7 +24,8 @@ app = FastAPI(title="Cabinet Clear API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=ORIGIN_REGEX,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -60,38 +64,46 @@ def root():
 # --- AUTHENTICATION ENDPOINTS ---
 @app.post("/auth/register")
 async def register_endpoint(payload: dict):
-    username = payload.get("username", "").strip()
-    password = payload.get("password", "").strip()
+    username = str(payload.get("username", "")).strip()
+    password = str(payload.get("password", "")).strip()
     if not username or not password:
         return JSONResponse(status_code=400, content={"success": False, "error": "Username and password required"})
+    if not valid_username(username):
+        return JSONResponse(status_code=400, content={"success": False, "error": USERNAME_RULE})
+    if not valid_password(password):
+        return JSONResponse(status_code=400, content={"success": False, "error": PASSWORD_RULE})
     if register_user(username, password):
         return {"success": True, "message": "User account built successfully"}
     return JSONResponse(status_code=400, content={"success": False, "error": "Username already exists"})
 
 @app.post("/auth/login")
 async def login_endpoint(payload: dict):
-    username = payload.get("username", "").strip()
-    password = payload.get("password", "").strip()
+    username = str(payload.get("username", "")).strip()
+    password = str(payload.get("password", "")).strip()
     if authenticate_user(username, password):
-        return {"success": True, "username": username}
+        return {"success": True, "username": username, "token": issue_token(username)}
     return JSONResponse(status_code=401, content={"success": False, "error": "Invalid username or credentials"})
 
-# --- TIMELINE HISTORY ENDPOINTS ---
+# --- TIMELINE HISTORY ENDPOINTS (a valid sign-in token is required, and only for your own history) ---
 @app.post("/history/save")
-async def save_history_endpoint(payload: dict):
-    username = payload.get("username", "")
+async def save_history_endpoint(request: Request, payload: dict):
+    user, problem = user_from_request(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"success": False, "error": problem})
     diagnosis = payload.get("diagnosis", "Unknown Diagnosis")
     letter = payload.get("letter_data", {})
     cabinet = payload.get("cabinet_data", {})
-    if not username:
-        return JSONResponse(status_code=400, content={"success": False, "error": "User session parameter missing"})
-    save_history_record(username, diagnosis, letter, cabinet)
+    save_history_record(user, diagnosis, letter, cabinet)
     return {"success": True}
 
 @app.get("/history/get/{username}")
-async def get_history_endpoint(username: str):
-    records = fetch_user_history(username)
-    return {"success": True, "data": records}
+async def get_history_endpoint(username: str, request: Request):
+    user, problem = user_from_request(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"success": False, "error": problem})
+    if username.strip().lower() != user:
+        return JSONResponse(status_code=403, content={"success": False, "error": MSG_OWN_ONLY})
+    return {"success": True, "data": fetch_user_history(user)}
 
 # --- EXISTING EXTRACTION AND EVALUATION ENDPOINTS ---
 @app.post("/extract-letter")
@@ -233,3 +245,7 @@ async def explain_endpoint(payload: dict):
 # language: the page sends X-Lang (en or tr); the AI prompts and the PDF follow it
 from lang_middleware import install as _install_language
 _install_language(app)
+
+# security: sign-in tokens, speed limits, daily AI cap and size limits (see security.py)
+from security import install as _install_security
+_install_security(app)

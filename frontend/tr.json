@@ -200,7 +200,21 @@
   "Jaundice in newborns": "Jaundice in newborns (İngilizce)",
   "Jaundice in newborns: symptoms, causes and treatment": "Jaundice in newborns: symptoms, causes and treatment (İngilizce)",
   "Distal radius fractures (broken wrist)": "Distal radius fractures (broken wrist) (İngilizce)",
-  "Caring for your child's cast or splint": "Caring for your child's cast or splint (İngilizce)"
+  "Caring for your child's cast or splint": "Caring for your child's cast or splint (İngilizce)",
+  "Too many requests. Please wait a few minutes and try again.": "Çok fazla istek gönderildi. Lütfen birkaç dakika bekleyip tekrar deneyin.",
+  "The service has reached its daily limit. Please try again tomorrow.": "Hizmet bugünkü sınırına ulaştı. Lütfen yarın tekrar deneyin.",
+  "That file is too large.": "Bu dosya çok büyük.",
+  "Your session has expired. Please sign in again.": "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.",
+  "You can only see your own history.": "Yalnızca kendi geçmişinizi görebilirsiniz.",
+  "Too many failed sign-in attempts. Please wait 15 minutes.": "Çok fazla başarısız giriş denemesi. Lütfen 15 dakika bekleyin.",
+  "Username must be 3 to 32 characters: letters, numbers, dot, dash or underscore.": "Kullanıcı adı 3 ile 32 karakter arasında olmalı: harf, rakam, nokta, tire veya alt çizgi.",
+  "Password must be 8 to 72 characters.": "Şifre 8 ile 72 karakter arasında olmalı.",
+  "Username already exists": "Bu kullanıcı adı zaten var",
+  "Username and password required": "Kullanıcı adı ve şifre gerekli",
+  "Invalid username or credentials": "Geçersiz kullanıcı adı veya şifre",
+  "That text is too long. Please paste only the letter.": "Bu metin çok uzun. Lütfen yalnızca belgeyi yapıştırın.",
+  "That text is too long. Please paste only the label.": "Bu metin çok uzun. Lütfen yalnızca etiketi yapıştırın.",
+  "Please type or paste your medicines.": "Lütfen ilaçlarınızı yazın veya yapıştırın."
  },
  "patterns": [
   {
@@ -265,23 +279,23 @@
   },
   {
    "re": "^Analysis Error: (.*)$",
-   "tr": "Analiz hatası: {1}"
+   "tr": "Analiz hatası: {t1}"
   },
   {
    "re": "^PDF Error: (.*)$",
-   "tr": "PDF hatası: {1}"
+   "tr": "PDF hatası: {t1}"
   },
   {
    "re": "^Scan failed: (.*)$",
-   "tr": "Tarama başarısız: {1}"
+   "tr": "Tarama başarısız: {t1}"
   },
   {
    "re": "^Failed to load history: (.*)$",
-   "tr": "Geçmiş yüklenemedi: {1}"
+   "tr": "Geçmiş yüklenemedi: {t1}"
   },
   {
    "re": "^Something went wrong: (.*)$",
-   "tr": "Bir şeyler ters gitti: {1}"
+   "tr": "Bir şeyler ters gitti: {t1}"
   },
   {
    "re": "^✅ Saved (\\d+) medicines?\\. Check the list above and remove anything that was read wrongly\\. Then read your discharge letter, or skip it and scan your medicines\\.$",

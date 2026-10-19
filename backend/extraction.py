@@ -47,7 +47,12 @@ def _parse_json_response(text):
         text = text.rsplit("```", 1)[0]
     return json.loads(text.strip())
 
+MAX_LETTER_CHARS = 30000   # a real discharge letter is a few thousand characters; this stops a huge paste costing money
+
+
 def extract_from_text(letter_text: str) -> dict:
+    if len(letter_text) > MAX_LETTER_CHARS:
+        raise ValueError("That text is too long. Please paste only the letter.")
     response = client.messages.create(
         model=MODEL,
         max_tokens=2000,
@@ -107,6 +112,7 @@ def score_urgency(warning_signs: list) -> list:
     """Score warning signs by urgency level."""
     if not warning_signs:
         return []
+    warning_signs = list(warning_signs)[:20]
     try:
         signs_text = "\n".join(f"- {s}" for s in warning_signs)
         response = client.messages.create(

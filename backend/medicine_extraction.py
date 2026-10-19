@@ -70,6 +70,8 @@ def extract_medicine_from_image(file_path: str, mime_type: str = "image/jpeg") -
     return _parse_json(response.content[0].text)
 
 def extract_medicine_from_text(label_text: str) -> dict:
+    if len(label_text) > 5000:
+        raise ValueError("That text is too long. Please paste only the label.")
     response = client.messages.create(
         model=MODEL,
         max_tokens=1000,
