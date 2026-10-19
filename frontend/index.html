@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <meta name="theme-color" content="#1E3A5F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -627,6 +628,27 @@
     gap: 10px;
   }
   .step-intro-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  /* Previous meds + What changed? (reuses your keep / dispose / unclear / missing styles) */
+  .tile-added { background: var(--accent-light); color: var(--accent); }
+  .edge-added { background: var(--accent); }
+  .label-added { color: var(--accent); }
+  .pill-added { background: var(--accent-light); color: var(--accent); }
+  .cc-evidence { font-size: 0.78rem; color: #94A3B8; margin-top: 3px; font-style: italic; }
+  .cc-questions { margin-top: 16px; }
+  .cc-questions ul { padding-left: 18px; margin-top: 6px; }
+  .cc-questions li { margin-bottom: 4px; }
+  
+  .rate-row { display: flex; gap: 8px; margin-bottom: 6px; }
+  .rate-btn {
+    flex: 1; padding: 10px 0; border: 1.5px solid var(--border); border-radius: 8px;
+    background: #fff; color: var(--muted); font-weight: 600; font-size: 0.95rem;
+    font-family: inherit; cursor: pointer; transition: all 0.15s;
+  }
+  .rate-btn:hover { border-color: var(--accent); }
+  .rate-btn.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .rate-ends { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 16px; }
+  .res-link { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .res-link:hover { text-decoration: underline; }
 
   @media (max-width: 480px) {
     header { padding: 22px 16px 28px; }
@@ -692,6 +714,39 @@
     🕒 View My History
   </button>
 
+  <button class="btn btn-ghost" onclick="togglePrevMeds()" style="margin-bottom:16px;">
+    💊 Add previous medications
+  </button>
+
+    <div class="card hidden fade-in" id="prevCard">
+    <div class="step-header">
+      <span class="step-num">💊</span>
+      <span class="step-title">Previous Medications</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="step-intro">
+      <span class="step-intro-icon">📝</span>
+      <div>
+        <strong style="display:block;margin-bottom:2px">What was taken before the hospital stay?</strong>
+        Type or paste the list, one medicine per line, with the strength and how often if you know it. You can add your discharge letter now, later, or skip it.
+      </div>
+    </div>
+
+    <div id="prevHistoryBox" class="hidden" style="margin-bottom:18px">
+      <label>Pick from your history</label>
+      <div class="med-list" id="prevHistoryList"></div>
+      <div class="or-row">or type a list</div>
+    </div>
+
+    <label>Previous medicines</label>
+    <textarea id="prevText" placeholder="e.g. Lisinopril 10 mg once daily&#10;Metformin 500 mg twice daily"></textarea>
+    <button class="btn btn-primary" id="prevSaveBtn" onclick="savePrevMeds()">Save my list →</button>
+
+    <div class="med-list" id="prevList" style="margin-top:16px"></div>
+    <div class="next-hint hidden" id="prevHint"></div>
+  </div>
+
   <div class="card hidden" id="historyCard">
     <div class="step-header">
       <span class="step-num">🕒</span>
@@ -734,6 +789,7 @@
     </div>
 
     <button class="btn btn-primary" id="extractBtn" onclick="extractLetter()">Read My Letter →</button>
+    <button class="btn btn-ghost" onclick="skipLetter()">Skip the letter and scan my medicines →</button>
   </div>
 
   <!-- Letter result -->
@@ -751,7 +807,48 @@
     <button class="btn btn-primary" onclick="showStep2()" style="margin-top:12px">Scan my medicine cabinet →</button>
   </div>
 
-  <!-- Step 2 -->
+    <!-- Explain it for me -->
+  <div class="card hidden fade-in" id="explainCard">
+    <div class="step-header">
+      <span class="step-num">💬</span>
+      <span class="step-title">Explain it for me</span>
+      <div class="step-divider"></div>
+    </div>
+
+    <div class="step-intro">
+      <span class="step-intro-icon">🤝</span>
+      <div>
+        <strong style="display:block;margin-bottom:2px">Tell us how you're feeling.</strong>
+        We'll explain your letter in the way that helps most. Every medicine, dose and warning sign stays exactly as your letter says.
+      </div>
+    </div>
+
+    <label>How overwhelmed do you feel right now?</label>
+    <div class="rate-row" id="stressRow">
+      <button class="rate-btn" onclick="setRate('stress',1)">1</button>
+      <button class="rate-btn" onclick="setRate('stress',2)">2</button>
+      <button class="rate-btn" onclick="setRate('stress',3)">3</button>
+      <button class="rate-btn" onclick="setRate('stress',4)">4</button>
+      <button class="rate-btn" onclick="setRate('stress',5)">5</button>
+    </div>
+    <div class="rate-ends"><span>Calm</span><span>Very overwhelmed</span></div>
+
+    <label>How well did you understand what the doctor said?</label>
+    <div class="rate-row" id="understandRow">
+      <button class="rate-btn" onclick="setRate('understand',1)">1</button>
+      <button class="rate-btn" onclick="setRate('understand',2)">2</button>
+      <button class="rate-btn" onclick="setRate('understand',3)">3</button>
+      <button class="rate-btn" onclick="setRate('understand',4)">4</button>
+      <button class="rate-btn" onclick="setRate('understand',5)">5</button>
+    </div>
+    <div class="rate-ends"><span>Not at all</span><span>Completely</span></div>
+
+    <div class="result-meta" style="margin-bottom:4px">Not sure? Skip the numbers and we'll use a standard explanation.</div>
+    <button class="btn btn-primary" id="explainBtn" onclick="explainLetter()">Explain it for me →</button>
+    <button class="btn btn-ghost" onclick="skipExplain()">Skip. Scan my medicines instead →</button>
+    <div id="explainOut" class="hidden" style="margin-top:20px"></div>
+  </div>
+
   <div class="card hidden" id="step2">
     <div class="step-header">
       <span class="step-num">02</span>
@@ -816,13 +913,33 @@
       This tool organizes information from your documents. It does not make medical decisions. Always confirm what medications to take with your doctor or pharmacist.
     </div>
   </div>
-
+  
+  <div class="card hidden fade-in" id="changesCard">
+    <div class="step-header">
+      <span class="step-num">↔</span>
+      <span class="step-title">What changed?</span>
+      <div class="step-divider"></div>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-tile tile-added"><span class="n" id="cnAdded">0</span><span class="lbl">New</span></div>
+      <div class="summary-tile tile-dispose"><span class="n" id="cnStopped">0</span><span class="lbl">Stopped</span></div>
+      <div class="summary-tile tile-unclear"><span class="n" id="cnChanged">0</span><span class="lbl">Changed</span></div>
+      <div class="summary-tile tile-missing"><span class="n" id="cnReview">0</span><span class="lbl">Ask pharmacist</span></div>
+    </div>
+    <div id="changesResults"></div>
+    <div class="disclaimer">
+      <strong>For reference only</strong>
+      This compares what the documents say. It does not decide which treatment is correct. Confirm every change with your doctor or pharmacist.
+    </div>
+  </div>
 </div>
 
 <script>
-  const API = ''https://cabinet-clear.onrender.com'';
+  const API = '';
   let dischargeData = null;
   let cabinetMeds = [];
+  let previousMeds = [];
+  let historyRecords = [];
   let medCounter = 0;
   let slotData = {};
   let crossRefResult = null;
@@ -853,6 +970,290 @@
       document.getElementById('letterFileName').classList.remove('hidden');
     }
   }
+    // ---------- Previous medications + What changed? ----------
+  function ccEsc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function togglePrevMeds() {
+    const c = document.getElementById('prevCard');
+    c.classList.toggle('hidden');
+    if (!c.classList.contains('hidden')) {
+      loadPrevHistory();
+      c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // Signed-in users can reuse the medicines from a past saved check.
+  async function loadPrevHistory() {
+    const box = document.getElementById('prevHistoryBox');
+    if (!currentSessionUser) { box.classList.add('hidden'); return; }
+    try {
+      const res = await fetch(`${API}/history/get/${encodeURIComponent(currentSessionUser)}`);
+      const json = await res.json();
+      historyRecords = (json.success && json.data) ? json.data : [];
+    } catch (e) {
+      historyRecords = [];
+    }
+    const usable = historyRecords
+      .map((r, i) => ({ r, i, meds: ((r.letter_data && r.letter_data.medications) || []).filter(m => m && m.name) }))
+      .filter(x => x.meds.length);
+    if (!usable.length) { box.classList.add('hidden'); return; }
+    document.getElementById('prevHistoryList').innerHTML = usable.map(({ r, i, meds }) => `
+      <div class="med-card">
+        <div class="med-card-left">
+          <div class="med-card-name">${ccEsc(new Date(r.timestamp).toLocaleDateString())} · ${ccEsc(r.diagnosis || 'Past check')}</div>
+          <div class="med-card-sub">${meds.length} medicine${meds.length === 1 ? '' : 's'}: ${ccEsc(meds.map(m => m.name).join(', '))}</div>
+        </div>
+        <button class="btn btn-ghost" style="width:auto;margin:0;padding:6px 14px" onclick="usePastRecord(${i})">Use</button>
+      </div>`).join('');
+    box.classList.remove('hidden');
+  }
+
+  function usePastRecord(i) {
+    const rec = historyRecords[i];
+    previousMeds = ((rec && rec.letter_data && rec.letter_data.medications) || [])
+      .filter(m => m && m.name).map(m => ({ ...m }));
+    syncPrev();
+    renderPrevList();
+    maybeCompare(true);
+  }
+
+  async function savePrevMeds() {
+    const text = document.getElementById('prevText').value.trim();
+    if (!text) { alert('Type or paste your previous medicines first.'); return; }
+    const btn = document.getElementById('prevSaveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Reading your list…';
+    try {
+      const res = await fetch(`${API}/parse-med-list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Could not read the list');
+      previousMeds = (json.data || []).filter(m => m && m.name);
+      if (!previousMeds.length) {
+        alert("We couldn't find any medicines in that text. Try one per line, with the strength and how often.");
+      }
+      syncPrev();
+      renderPrevList();
+      maybeCompare(true);
+    } catch (e) {
+      alert('Something went wrong: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save my list →';
+    }
+  }
+
+  // If the letter was skipped, the previous list is what the cabinet is checked against.
+  function syncPrev() {
+    if (dischargeData && dischargeData.skippedLetter) dischargeData.medications = previousMeds.slice();
+  }
+
+  function renderPrevList() {
+    document.getElementById('prevList').innerHTML = previousMeds.map((m, i) => `
+      <div class="med-card">
+        <div class="med-card-left">
+          <div class="med-card-name">${ccEsc(m.name)}</div>
+          <div class="med-card-sub">${ccEsc([m.dosage, m.frequency].filter(Boolean).join(' · '))}</div>
+        </div>
+        <button class="remove-btn" onclick="removePrevMed(${i})" aria-label="Remove">✕</button>
+      </div>`).join('');
+    const hint = document.getElementById('prevHint');
+    hint.classList.toggle('hidden', !previousMeds.length);
+    hint.textContent = '✅ Saved ' + previousMeds.length + ' medicine' + (previousMeds.length === 1 ? '' : 's') +
+      '. Check the list above and remove anything that was read wrongly. Then read your discharge letter, or skip it and scan your medicines.';
+  }
+
+  function removePrevMed(i) {
+    previousMeds.splice(i, 1);
+    syncPrev();
+    renderPrevList();
+    maybeCompare(false);
+  }
+
+  function skipLetter() {
+    if (!dischargeData) {
+      dischargeData = {
+        diagnosis_summary: previousMeds.length
+          ? 'No discharge letter. Compared with previous medications.'
+          : 'No discharge letter provided.',
+        medications: previousMeds.slice(),
+        follow_up_appointments: [],
+        warning_signs: [],
+        activity_restrictions: [],
+        extraction_confidence: 'high',
+        confidence_notes: '',
+        skippedLetter: true
+      };
+    }
+    showStep2();
+  }
+
+  async function maybeCompare(scroll) {
+    const card = document.getElementById('changesCard');
+    const after = (dischargeData && !dischargeData.skippedLetter && dischargeData.medications) || [];
+    if (!previousMeds.length || !after.length) { card.classList.add('hidden'); return; }
+    try {
+      const res = await fetch(`${API}/reconcile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ before: previousMeds, after })
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Comparison failed');
+      renderChanges(json.data);
+      card.classList.remove('hidden');
+      if (scroll) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      console.log('Compare failed:', e);
+    }
+  }
+
+  function renderChanges(data) {
+    const s = data.summary || {};
+    const changed = (s.dose_changed || 0) + (s.frequency_changed || 0) + (s.dose_and_frequency_changed || 0);
+    document.getElementById('cnAdded').textContent = s.added || 0;
+    document.getElementById('cnStopped').textContent = s.stopped || 0;
+    document.getElementById('cnChanged').textContent = changed;
+    document.getElementById('cnReview').textContent = s.needs_review || 0;
+
+    // our status -> your existing colour styles
+    const groups = [
+      { statuses: ['needs_review'], type: 'missing', label: 'Ask your pharmacist', pill: '? Check' },
+      { statuses: ['stopped'], type: 'dispose', label: 'On the old list, not the new one', pill: '✕ Stopped' },
+      { statuses: ['added'], type: 'added', label: 'New on the discharge list', pill: '＋ New' },
+      { statuses: ['dose_changed', 'frequency_changed', 'dose_and_frequency_changed'], type: 'unclear', label: 'Changed', pill: '↔ Changed' },
+      { statuses: ['unchanged'], type: 'keep', label: 'Same as before', pill: '✓ Same' }
+    ];
+
+    let html = '';
+    groups.forEach(g => {
+      const items = (data.findings || []).filter(f => g.statuses.includes(f.status));
+      if (!items.length) return;
+      html += `<div class="result-group"><div class="group-label label-${g.type}">${g.label} &mdash; ${items.length}</div>`;
+      items.forEach(f => {
+        const details = (f.details || []).map(d => ccEsc(d).replace(/-&gt;/g, '→')).join('; ');
+        const before = (f.evidence?.before || []).map(ccEsc).join(' | ');
+        const after = (f.evidence?.after || []).map(ccEsc).join(' | ');
+        html += `<div class="result-card">
+          <div class="result-edge edge-${g.type}"></div>
+          <div class="result-body">
+            <div class="result-name">${ccEsc(f.drug)}</div>
+            ${details ? `<div class="result-action">${details}</div>` : ''}
+            ${before ? `<div class="cc-evidence">Before: ${before}</div>` : ''}
+            ${after ? `<div class="cc-evidence">Now: ${after}</div>` : ''}
+          </div>
+          <span class="status-pill pill-${g.type}">${g.pill}</span>
+        </div>`;
+      });
+      html += '</div>';
+    });
+
+    const qs = data.questions_for_clinician || [];
+    if (qs.length) {
+      html += `<div class="summary-box cc-questions"><div class="s-label" style="font-weight:600">Questions to ask your doctor or pharmacist</div><ul>${qs.map(q => `<li>${ccEsc(q)}</li>`).join('')}</ul></div>`;
+    }
+    document.getElementById('changesResults').innerHTML = html;
+  }
+  
+  let rateVals = { stress: 0, understand: 0 };
+
+  function setRate(kind, v) {
+    rateVals[kind] = v;
+    const row = document.getElementById(kind === 'stress' ? 'stressRow' : 'understandRow');
+    [...row.children].forEach((b, i) => b.classList.toggle('on', i + 1 === v));
+  }
+
+  function showExplainCard() {
+    document.getElementById('explainCard').classList.remove('hidden');
+    document.getElementById('explainOut').classList.add('hidden');
+  }
+
+  function skipExplain() {
+    document.getElementById('explainCard').classList.add('hidden');
+    showStep2();
+  }
+
+  async function explainLetter() {
+    if (!dischargeData) { alert('Please read your discharge letter first.'); return; }
+    // Blank ratings are fine: use the middle of the scale (a standard explanation).
+    const stress = rateVals.stress || 3;
+    const understanding = rateVals.understand || 3;
+    const btn = document.getElementById('explainBtn');
+    btn.disabled = true;
+    btn.textContent = 'Writing your explanation…';
+    try {
+      const res = await fetch(`${API}/explain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ discharge_data: dischargeData, stress, understanding })
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Could not write the explanation');
+      renderExplanation(json.data);
+    } catch (e) {
+      alert('Something went wrong: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Explain it for me →';
+    }
+  }
+
+  function renderExplanation(d) {
+    const e = d.explanation || {};
+    const list = (items) => `<ul>${items.map(x => `<li>${x}</li>`).join('')}</ul>`;
+    let html = '';
+    if (d.notice) html += `<div class="unclear-explainer">⚠️ ${ccEsc(d.notice)}</div>`;
+
+    html += `<div class="summary-box"><div class="diag">${ccEsc(e.opening)}</div>`;
+    if (e.what_happened) {
+      html += `<div class="summary-section"><div class="s-label">What happened</div><div>${ccEsc(e.what_happened)}</div></div>`;
+    }
+    if ((e.do_now || []).length) {
+      html += `<div class="summary-section"><div class="s-label">Do this first</div>${list(e.do_now.map(ccEsc))}</div>`;
+    }
+    if ((e.medicines || []).length) {
+      html += `<div class="summary-section"><div class="s-label">Your medicines</div>${list(e.medicines.map(m =>
+        `<strong>${ccEsc(m.name)}</strong>: ${ccEsc(m.how_to_take)}${m.what_for ? `<div class="cc-evidence">${ccEsc(m.what_for)}</div>` : ''}`))}</div>`;
+    }
+    if ((e.follow_up || []).length) {
+      html += `<div class="summary-section"><div class="s-label">Appointments</div>${list(e.follow_up.map(f =>
+        `${ccEsc(f.appointment)} &mdash; ${ccEsc(f.when)}${f.why ? `<div class="cc-evidence">${ccEsc(f.why)}</div>` : ''}`))}</div>`;
+    }
+    if ((e.warning_signs || []).length) {
+      html += `<div class="summary-section"><div class="s-label" style="color:var(--red)">Get help right away if</div><ul class="warning-list">${e.warning_signs.map(w =>
+        `<li>${ccEsc(w.plain)}${w.plain !== w.original ? `<div class="cc-evidence">Your letter says: ${ccEsc(w.original)}</div>` : ''}</li>`).join('')}</ul></div>`;
+    }
+    if ((e.good_to_know || []).length) {
+      html += `<div class="summary-section"><div class="s-label">Good to know</div>${list(e.good_to_know.map(ccEsc))}</div>`;
+    }
+    html += '</div>';
+
+    const res = d.resources;
+    if (res && (res.groups || []).length) {
+      html += `<div class="summary-box" style="margin-top:14px"><div class="s-label" style="font-weight:600">Read more from trusted sources</div>`;
+      res.groups.forEach(g => {
+        const links = (g.links || []).filter(l => /^https:\/\//.test(l.url));
+        if (!links.length) return;
+        html += `<div class="summary-section"><div class="s-label">${ccEsc(g.label)}</div><ul>${links.map(l =>
+          `<li><a class="res-link" href="${ccEsc(l.url)}" target="_blank" rel="noopener noreferrer">${ccEsc(l.title)}</a><div class="cc-evidence">${ccEsc(l.org)}</div></li>`).join('')}</ul></div>`;
+      });
+      html += `<div class="cc-evidence" style="margin-top:8px">${ccEsc(res.note)}</div></div>`;
+    }
+    if (d.profile && d.profile.offer_learning) {
+      html += `<div class="result-meta" style="margin-top:10px">Still unsure? Write down your questions and ask your doctor or pharmacist before you leave.</div>`;
+    }
+    if (d.fallback) {
+      html += `<div class="result-meta" style="margin-top:6px">Shown in the standard format, straight from your letter.</div>`;
+    }
+    const out = document.getElementById('explainOut');
+    out.innerHTML = html;
+    out.classList.remove('hidden');
+  } 
 
   function showStep2() {
     const s2 = document.getElementById('step2');
@@ -974,6 +1375,8 @@
 
       dischargeData = json.data;
       renderLetterSummary(json.data);
+      maybeCompare(false);
+      showExplainCard();
 
       const result = document.getElementById('letterResult');
       result.classList.remove('hidden');

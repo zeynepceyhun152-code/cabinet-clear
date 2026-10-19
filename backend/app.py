@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from extraction import extract_from_text, extract_from_file
 from medicine_extraction import extract_medicine_from_image, extract_medicine_from_text
 from crossreference import cross_reference
+from reconcile import compare_med_lists
+from explain import generate_explanation
 # Import our relational SQLite gateway functions
 from database import register_user, authenticate_user, save_history_record, fetch_user_history
 
@@ -193,3 +195,37 @@ async def check_clarity_endpoint(file: UploadFile = File(...)):
         return JSONResponse(content={"success": True, "data": result})
     except Exception as e:
         return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+
+@app.post("/parse-med-list")
+async def parse_med_list_endpoint(payload: dict):
+    """Turn a typed or pasted medicine list into structured medications."""
+    try:
+        text = (payload.get("text") or "").strip()
+        if not text:
+            return JSONResponse(status_code=400, content={"success": False, "error": "Please type or paste your medicines."})
+        meds = extract_from_text(text).get("medications", []) or []
+        return JSONResponse(content={"success": True, "data": meds})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+
+
+@app.post("/reconcile")
+async def reconcile_endpoint(payload: dict):
+    """Compare the 'before' list with the discharge list. Plain Python, no AI."""
+    try:
+        result = compare_med_lists(payload.get("before") or [], payload.get("after") or [])
+        return JSONResponse(content={"success": True, "data": result})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+
+@app.post("/explain")
+async def explain_endpoint(payload: dict):
+    """Explain the extracted discharge letter in a style that fits how the reader feels."""
+    try:
+        data = payload.get("discharge_data")
+        if not data:
+            return JSONResponse(status_code=400, content={"success": False, "error": "discharge_data is required."})
+        result = generate_explanation(data, payload.get("stress", 3), payload.get("understanding", 3))
+        return JSONResponse(content={"success": True, "data": result})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})    
