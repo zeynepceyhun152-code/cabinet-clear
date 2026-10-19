@@ -1,7 +1,7 @@
-// Cabinet Clear service worker.
-// Network first: a new deploy shows up right away. The saved copy of /app is only used when offline.
-const CACHE_NAME = 'cabinet-clear-v2';
-const STATIC_ASSETS = ['/app'];
+// Cabinet Clear service worker. Network first: a new deploy shows up right away.
+// The saved copy of the page is only used when the phone is offline.
+const CACHE_NAME = 'cabinet-clear-v3';
+const STATIC_ASSETS = ['/'];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -9,7 +9,6 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  // delete the old v1 copy so nobody is stuck on an old version
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
@@ -19,15 +18,13 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const req = event.request;
-  if (req.method !== 'GET') return;                 // never touch API calls (POST)
+  if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin) return;       // leave other sites alone
-  if (url.pathname.startsWith('/history')) return;  // history must always be live
-
+  if (url.origin !== location.origin) return;   // the Render server is another site: leave it alone
   event.respondWith(
     fetch(req)
       .then(res => {
-        if (res.ok && url.pathname === '/app') {
+        if (res.ok && url.pathname === '/') {
           const copy = res.clone();
           caches.open(CACHE_NAME).then(c => c.put(req, copy));
         }
