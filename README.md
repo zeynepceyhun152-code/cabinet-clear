@@ -1,13 +1,28 @@
-# 🏥 Cabinet Clear
+# Cabinet Clear
 
 **Understand your discharge letter. Know exactly what to keep, take, or throw away.**
-
 
 > It's 11 p.m. Maya, 9, is finally asleep after an asthma flare-up. Her dad is sitting at the kitchen table with a discharge letter full of dosing instructions in one hand and a drawer of old inhalers and amoxicillin bottles in the other, trying to figure out which ones are safe to use tonight and which ones have been expired since last winter. Cabinet Clear is built for that exact moment.
 
 <p align="center">
   <img src="screenshots/results_screen.png" width="420" alt="Cabinet Clear results screen showing Keep/Dispose/Unclear/Pharmacy buckets">
 </p>
+
+Built by **[FILL IN: how you want to be credited]**. Cabinet Clear began as a hackathon project in June 2026. Version 2, described here, was built in October 2026 for the Congressional App Challenge.
+
+---
+
+## Try it
+
+| | |
+|---|---|
+| **Live app** | https://cabinet-clear-for-sunny-hacks.vercel.app/ (no account needed) |
+| **Demo video** | **[FILL IN: link]** |
+| **Phone** | Open the link in Safari or Chrome, then *Share → Add to Home Screen*. It installs like an app. |
+| **Language** | The **Türkçe / English** button is in the top right corner. |
+| **Sample letters** | `sample_data/discharge_letters/`: open a `.txt`, copy the text, and paste it into the app. |
+
+> **Heads-up:** the app runs on free hosting that goes to sleep when nobody is using it. The **first** request after a quiet spell can take up to a minute. Open the live link once, wait, and everything after that is fast.
 
 ---
 
@@ -23,7 +38,7 @@ Every year, families leave the hospital with a discharge letter full of medical 
 
 📄 **Read any discharge letter** — paste text, upload a PDF, or snap a photo. Get a plain-language summary: diagnosis, medications, follow-ups, and warning signs ranked by urgency.
 
-📸 **Scan your medicine cabinet** — photograph each bottle's label and expiration date. A custom-trained CNN checks photo clarity *before* extraction even runs, so blurry shots get caught immediately.
+📸 **Scan your medicine cabinet** — photograph each bottle's label and expiration date, **or photograph a whole shelf at once**. For single-label photos, a custom-trained CNN checks photo clarity *before* extraction runs, so blurry shots get caught immediately.
 
 🔍 **Cross-reference everything** — fuzzy brand-to-generic matching (Tylenol → Acetaminophen) backed by real FDA drug data, so the system isn't fooled by OCR typos or brand names.
 
@@ -33,7 +48,18 @@ Every year, families leave the hospital with a discharge letter full of medical 
 
 📱 **Installable as a phone app** — PWA support means it lives on your home screen, no app store required.
 
-🔐 **Save your history** — sign in to keep a record of past discharge letters and cabinet checks, so you can compare visits over time. Passwords are hashed with bcrypt before storage; nothing is ever saved in plain text.
+🔐 **Save your history** — sign in to keep a record of past discharge letters and cabinet checks. History is encrypted in the database, and you can delete your account and everything saved at any time.
+
+### New in version 2 (October 2026)
+
+| Feature | What it does |
+|---|---|
+| **What changed?** | Paste your medicines from *before* the hospital stay. The app compares them with the discharge letter and shows what is **new, stopped, changed, or needs a pharmacist's eye**. The comparison is plain Python, not AI, and it produces questions to ask your doctor or pharmacist. It never says which treatment is correct. |
+| **Explain it for me** | Rate how stressed you feel and how well you understood the doctor (both optional). The explanation adapts: short and calm, standard, or detailed. A safety checker then compares the explanation against the letter, and if anything doesn't match, the app shows a plain version built directly from the letter's facts. |
+| **Read more from trusted sources** | Links to hospital, government and professional-society pages, chosen by keyword rules from the diagnosis. The AI never picks links, so there are no invented URLs. |
+| **Whole-shelf scan** | One photo of a shelf: numbered outlines around each package, with what could actually be read on each. Unreadable ones are sent to "Unclear" and never guessed. |
+| **Türkçe / English** | The whole app, the AI's explanations and the PDF work in Turkish. |
+| **Permanent, protected accounts** | Sign-in tokens, rate limits, a daily cap on AI calls, encrypted history, delete-my-account, and a plain-language privacy note. |
 
 ---
 
@@ -78,6 +104,18 @@ A general chatbot can explain medical terms. It can't tell you that the Ibuprofe
               Plain-language UI + PDF export
 ```
 
+**Where it runs**
+
+```
+ Phone / browser (installable web app)         Vercel   ← the page you open
+            │  https
+            ▼
+ FastAPI server (rate limits, sign-in tokens)  Render
+      │                 │                │
+      ▼                 ▼                ▼
+ Claude API        OpenFDA data     Neon PostgreSQL  ← accounts + encrypted history
+```
+
 ---
 
 ## AI Components
@@ -89,8 +127,11 @@ A general chatbot can explain medical terms. It can't tell you that the Ibuprofe
 | **Letter extraction** | Reads discharge letters in any format, returns structured plain-language summary | Claude API (Anthropic) |
 | **Label extraction** | Reads drug name, dosage, and expiration date from photos | Claude API (Anthropic) |
 | **Urgency scoring** | Ranks warning signs by how urgently they require action | Claude API + structured prompting |
+| **Adaptive explanation** | Rewrites the letter's facts in a style that fits how the reader feels | Claude API + a rule-based faithfulness checker |
+| **Whole-shelf scan** | Finds each package in one photo and reads what is printed | Claude API (vision) + code that validates every outline |
 | **Brand/generic resolution** | Maps "Tylenol" → "Acetaminophen" even with OCR typos | OpenFDA drug label data + fuzzy string matching |
 | **Drug interaction check** | Flags risky combinations among kept medications | Static clinical reference + OpenFDA interaction data |
+| **Medication comparison** | Finds what changed between two medicine lists | Custom Python rules (no AI) |
 | **Cross-reference engine** | Deterministic rules engine — the safety-critical decision layer | Custom Python logic |
 
 **Why deterministic rules for the final decision layer?** Medical safety decisions shouldn't depend on a model that can hallucinate. The LLM handles language understanding (reading messy documents); a transparent, auditable rules engine handles the actual Keep/Dispose logic. This is intentional, not a limitation.
@@ -110,7 +151,31 @@ A general chatbot can explain medical terms. It can't tell you that the Ibuprofe
 - The final Keep/Dispose decision itself is made by a **deterministic, auditable Python rules engine** — not the LLM. The LLM's job is limited to reading messy input into structured fields; it does not get the final say on what happens to any medication.
 - The original extracted text is always shown alongside the AI's summary so the user can sanity-check it against the source document.
 
+**Added in version 2**
+- **Explanations are checked against the letter, not trusted.** Code verifies that every medicine, dose and number in an AI-written explanation matches the letter, that no medicine or number was invented, that every warning sign is present in its original wording, that no follow-up was dropped, and that no unsafe advice (such as "stop the medicine") appears. If any check fails, the person sees a plain version built directly from the extracted facts.
+- **The AI is told not to guess how the reader feels** and not to turn vague words like "persistent" into specific counts.
+- **Expiry is decided by code.** The AI only transcribes the printed date. The app works out whether it has passed.
+- **Names come only from print.** In the whole-shelf scan, a medicine is named only if the name was readable on the package. Anything else becomes "Unknown" and goes to "Unclear." Nothing is guessed from shape or color.
+- **The AI-written text is never the last word.** Warning signs are shown beside the letter's own wording, and every screen says to confirm with a doctor or pharmacist.
+
 This is a defense-in-depth approach: no single layer is trusted to be right on its own.
+
+---
+
+## Evaluation and Tests
+
+All of these run without an API key or internet connection (`ANTHROPIC_API_KEY=test python3 test_<name>.py`, see [Running the tests](#running-the-tests)). The caveat column matters, so please read it.
+
+| Component | What was tested | Result | Caveat |
+|---|---|---|---|
+| Clarity CNN | 350 validation images | 100% precision and recall | Built from augmented copies of the training photos, so this is optimistic. See [The CNN, In Depth](#the-cnn-in-depth). |
+| Medication comparison | 35 cases covering 50 medications: brand vs generic, mcg vs mg, "twice daily" vs "BID", salts, extended-release, tapers, shared ingredients | **50/50** correct, against 24/50 for naive exact-text matching | The cases were written by the developer while building. An independent blind set: **[FILL IN: result, or "planned"]**. |
+| Explanation safety checker | 47 deliberately damaged explanations (wrong dose, invented medicine, dropped warning sign, unsafe advice…) | **47/47 caught.** The plain fallback passes its own checks in all 15 test cases. | Uses synthetic letters. Results with the real model (fallback rate, reading level): **[FILL IN: run `eval_explain.py`]** |
+| Whole-shelf scan | Outline validation, expiry-date parsing (18 date examples), the on-screen behavior | Automated tests pass | Accuracy on real shelf photos has not been measured yet: **[FILL IN]** |
+| Security | 50 automated checks: tokens, history access, limits, size caps, browser origin rules, password lock-out | All pass | See [Security and Privacy](#security-and-privacy) |
+| Privacy | Encryption, tampering, key rotation, copied records, account deletion, upload clean-up | All pass | |
+| Storage | Accounts and history on SQLite and on PostgreSQL, including 6 simultaneous sign-ups for one name | All pass | Tested on PostgreSQL 16 and in production on Neon |
+| Turkish | The page's translator and the server's translator agree on 255 texts | Identical | Wording reviewed by: **[FILL IN]** |
 
 ---
 
@@ -138,7 +203,7 @@ It's tempting to reach for architectures like U-Net or ResUNet for any "real" co
 
 | | |
 |---|---|
-| **Base images** | 437 medicine packaging photos (public dataset) |
+| **Base images** | 437 medicine packaging photos (public dataset: **[FILL IN: name, source and license]**) |
 | **Augmentation** | Each base "clear" image was used to generate 3 "unclear" variants: Gaussian blur, brightness reduction (simulating poor lighting), and downscale-then-upscale (simulating a photo taken too far away) |
 | **Total dataset** | 1,748 images (437 clear + 1,311 unclear) |
 | **Train / validation split** | 1,398 / 350 (80/20) |
@@ -188,12 +253,91 @@ If a photo is rejected, the user sees the Grad-CAM heatmap directly in the app, 
 
 ---
 
+## Whole-Shelf Scan
+
+Take one photo of a shelf or cabinet. The app draws a numbered outline around each package it finds and reads what is printed on each one. Tick the ones you want and add them to the cabinet check.
+
+- Outlines come from Claude's image reading. The code then **validates every outline** (inside the photo, large enough, near-duplicates removed, at most 30), straightens phone-photo rotation, and shrinks large photos.
+- Each package gets a confidence level. Unreadable or low-confidence packages are marked **"Close-up needed"**, are not ticked by default, and go to **Unclear** if added.
+- The clarity CNN is used for single-label photos. A shelf photo is judged package by package instead, using the confidence level and the readability of each name.
+- The same cross-reference as the one-at-a-time scanner applies afterwards, so the result flows into Keep / Dispose / Unclear / Get from Pharmacy unchanged.
+- The code is organized so that the box-finding step can be replaced by our own trained detector without changing the screen or the checks (see the research notes below).
+
+---
+
+## Languages
+
+The app works in English and Turkish, which makes it usable for Turkish-speaking families.
+
+- A dictionary of fixed texts (`frontend/tr.json`) is shared by the page and the server, so both translate the same way. Texts that contain names or numbers use patterns.
+- The AI is told which language to write in. Medicine names, doses, numbers and dates are never translated.
+- Turkish letters work as input. The PDF uses a Unicode font so letters like ş, ğ, İ and ı print correctly.
+- Limits: the FDA text inside some interaction warnings, and the linked reading pages, stay in English (the links are marked "İngilizce").
+- Turkish wording review: **[FILL IN]**
+
+---
+
+## Security and Privacy
+
+**Access**
+- Signing in returns a signed token (HMAC-SHA256, 7 days). Saved history can only be read, saved, or deleted with a valid token, and only for the account in the token.
+- Passwords are stored as bcrypt hashes. After 10 wrong passwords from one visitor, sign-in and account deletion lock for 15 minutes.
+- Per-visitor limits on AI calls, a daily cap on AI calls for the whole service (default 600), size limits on uploads (10 MB) and pasted letters (30,000 characters), and a browser-origin allow-list.
+- An early version let anyone read a user's saved history by guessing the username. We found this in our own review, fixed it, and added tests that prove it can't happen.
+
+**Privacy**
+- Saved history is encrypted before it is stored (AES-256-GCM). Each value is locked to its owner and field, and the key lives only in a server setting, never in the database.
+- People can delete their account and every saved record from inside the app.
+- Letters and photos are **not stored**. They are processed and deleted, including when reading them fails (an early version left the file behind on failure, and that was fixed).
+- Without signing in, nothing about the user is saved.
+- **What is sent to the AI:** to read letters and photos, the app sends them to Anthropic's AI service. Anthropic states that it does not train its models on content sent through its API by default. Read its current policy: https://www.anthropic.com/legal/privacy
+- **Limits, stated plainly:** the server needs the key to show history back to its owner, so whoever operates the server could also read it. The encryption protects stored data (for example, a leaked database), not against the key holder. The app is an educational tool and is not claimed to meet any health-privacy regulation.
+
+---
+
+## Research Notes: A Package Detector That Did Not Generalize
+
+For a later phase, we trained our own detector (YOLOv8s, one class: "medicine package") to find packages without an API call. We report this result because it taught us something.
+
+- Trained on a public medicine-box dataset (2,934 train / 650 validation photos). On its own validation photos, the training log reports about 99.5% mAP@50, which looks excellent.
+- Tested on **84 photos from a different public dataset** that it never saw, it found only **43%** of packages (95% range 33% to 54%), with precision of 51%.
+- Lesson: a score on photos from the same source can be badly optimistic. We are checking whether the gap comes from the model or from differences in how the two datasets label things (boxes on a table versus pill bottles on a desk), and we plan to collect our own labeled photos of US packaging and crowded shelves as an independent test.
+- This detector is **not used in the live app.** The whole-shelf scan uses Claude's image reading instead, with the validation described above.
+
+Datasets (via Roboflow Universe): `yolo-m1fwc / medicine-box-o3he4` (CC BY 4.0), used for training, and `texas-am-university-bdqxe / medicine-box-a33sn` (MIT), used only for testing. Versions used: **[FILL IN: from the download lines in your Colab notebook]**.
+
+---
+
 ## Tech Stack
 
-**Backend:** FastAPI · PyTorch · torchvision · Grad-CAM · thefuzz · fpdf2
-**Frontend:** Vanilla HTML/CSS/JS · PWA (installable)
-**AI:** Claude API (Anthropic) · Custom ResNet18 CNN
+**Backend:** FastAPI · PyTorch · torchvision · pytorch-grad-cam · thefuzz · fpdf2 · bcrypt · cryptography · pg8000
+**Frontend:** Vanilla HTML/CSS/JS · installable web app (PWA) · English and Turkish
+**Storage:** PostgreSQL on Neon (SQLite for local use)
+**Hosting:** Vercel (page) · Render (server) · Neon (database)
+**AI:** Claude API (Anthropic) · custom ResNet18 CNN
 **Data:** OpenFDA drug label API · synthetic discharge letters · self-collected training images
+
+---
+
+## API Endpoints
+
+| Method | Path | What it does |
+|---|---|---|
+| POST | `/extract-letter` | Reads a discharge letter (text, PDF or image) |
+| POST | `/score-urgency` | Ranks warning signs by urgency |
+| POST | `/check-clarity` | CNN photo-clarity check with Grad-CAM |
+| POST | `/scan-medicine` | Reads one medicine label |
+| POST | `/scan-cabinet` | Finds and reads every package in one shelf photo |
+| POST | `/analyze` | Cross-references the letter and the cabinet |
+| POST | `/check-interactions` | Drug interaction warnings |
+| POST | `/parse-med-list` | Turns a typed medicine list into structured data |
+| POST | `/reconcile` | Compares the earlier list with the discharge list |
+| POST | `/explain` | Adaptive explanation, checked against the letter |
+| POST | `/generate-pdf` | PDF summary (English or Turkish) |
+| POST | `/auth/register`, `/auth/login` | Accounts and sign-in tokens |
+| POST / GET | `/history/save`, `/history/get/{username}` | Saved history (token required, own account only) |
+| DELETE | `/account` | Deletes the account and all saved history (token and password required) |
+| GET | `/health` | Where data is stored, and whether it is encrypted |
 
 ---
 
@@ -205,18 +349,34 @@ cabinet-clear/
 │   ├── app.py                  # FastAPI server, all endpoints
 │   ├── extraction.py           # Discharge letter extraction + urgency scoring
 │   ├── medicine_extraction.py  # Medicine label extraction
+│   ├── cabinet_scan.py         # Whole-shelf scan: outline checks, expiry parsing
 │   ├── crossreference.py       # Fuzzy matching + cross-reference engine
+│   ├── reconcile.py            # Before/after medication comparison (no AI)
+│   ├── explain.py              # Adaptive explanations + faithfulness checker
+│   ├── resources.py            # Trusted reading links, chosen by rules
 │   ├── interaction_checker.py  # Drug interaction detection
 │   ├── clarity_checker.py      # CNN inference + Grad-CAM
-│   ├── pdf_generator.py        # PDF summary export
-│   ├── database.py             # Account + history storage (SQLite, bcrypt)
+│   ├── pdf_generator.py        # PDF summary export (English and Turkish)
+│   ├── security.py             # Tokens, rate limits, daily cap, size limits
+│   ├── database.py             # Accounts + history (PostgreSQL or SQLite, bcrypt)
+│   ├── crypto_store.py         # Encryption of saved history
+│   ├── lang_ctx.py             # Which language a request wants
+│   ├── lang_middleware.py      # Reads the language header
+│   ├── translate_server.py     # Turkish text for server-written messages
 │   ├── clarity_model.pth       # Trained CNN weights
 │   ├── drug_db.json            # FDA brand→generic mappings
+│   ├── test_*.py               # Automated tests
+│   ├── eval_explain.py         # Measures the real model's fallback rate and reading level
+│   ├── check_links.py          # Checks the trusted reading links still open
 │   └── requirements.txt        # Python dependencies
 ├── frontend/
-│   ├── index.html              # Full app UI (incl. sign in / sign up)
-│   ├── manifest.json           # PWA config
-│   └── sw.js                   # Service worker
+│   ├── index.html              # Full app UI (sign in, letter, cabinet, plan)
+│   ├── i18n.js, tr.json        # English / Turkish switch and its dictionary
+│   ├── session.js              # Keeps the sign-in token in memory
+│   ├── cabinet_scan.js         # Whole-shelf scan screen
+│   ├── privacy.js              # Privacy note and delete-my-account
+│   ├── manifest.json, sw.js    # PWA config and service worker
+│   └── icon-*.png              # App icons
 └── sample_data/
     └── discharge_letters/      # Synthetic test letters (txt/pdf/png × 5 scenarios)
 ```
@@ -225,37 +385,33 @@ cabinet-clear/
 
 ## Running It On Your Own Computer
 
-This section is written from real setup experience, including the snags we actually hit — following it in order should save you the troubleshooting we went through.
-
 ### 1. Prerequisites
 
-- **Python 3.11 or 3.12** (not 3.13+, and not 3.14). PyTorch's Windows binaries are not reliably compatible with the newest Python releases yet — using 3.14 specifically caused a `DLL initialization failed` error loading `c10.dll` for us. Check what you have with `python --version`, and if you're on an unsupported version, install 3.12 from [python.org](https://www.python.org/downloads/) (or via the Python Install Manager: `py install 3.12`) — multiple versions can coexist on the same machine.
-- **Windows only — Microsoft Visual C++ Redistributable.** PyTorch's compiled C++ core (yes, PyTorch is partly written in C++ under the hood) needs this Windows system library to load. If you hit a DLL error even on a supported Python version, install it from [aka.ms/vs/17/release/vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe), then **restart your computer** — this step matters, DLL loading issues often need a fresh process to take effect.
-- **An Anthropic (Claude) API key** — get one at [console.anthropic.com](https://console.anthropic.com).
-- A stable internet connection for the initial install — PyTorch alone is roughly 120MB to download.
+- **Python 3.11 or 3.12** (recommended). PyTorch's Windows builds can fail to load on the newest Python releases; if you see a `DLL initialization failed` error, install 3.12 from [python.org](https://www.python.org/downloads/) (multiple versions can coexist).
+- **Windows only — Microsoft Visual C++ Redistributable** ([aka.ms/vs/17/release/vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe)), then restart the computer.
+- **An Anthropic (Claude) API key**: [console.anthropic.com](https://console.anthropic.com).
+- A stable internet connection for the first install (PyTorch alone is roughly 120 MB).
 
-### 2. Clone the repo and set up a virtual environment
+### 2. Clone and set up a virtual environment
 
 ```bash
 git clone https://github.com/<your-username>/cabinet-clear.git
 cd cabinet-clear/backend
 ```
 
-**Windows (PowerShell):**
-```powershell
-py -3.12 -m venv venv
-.\venv\Scripts\Activate.ps1
-python --version   # should print Python 3.12.x — confirm before continuing
-```
-
 **Mac/Linux:**
 ```bash
 python3.12 -m venv venv
 source venv/bin/activate
-python --version
 ```
 
-Your terminal prompt should now show `(venv)` at the start of the line. **Every time you open a new terminal to work on this project, you need to reactivate the venv** with the same command above — it does not stay active across terminal sessions.
+**Windows (PowerShell):**
+```powershell
+py -3.12 -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+Your prompt should now start with `(venv)`. Reactivate it every time you open a new terminal.
 
 ### 3. Install dependencies
 
@@ -263,46 +419,101 @@ Your terminal prompt should now show `(venv)` at the start of the line. **Every 
 pip install -r requirements.txt
 ```
 
-This installs FastAPI, PyTorch, torchvision, Grad-CAM, and everything else. It will take a few minutes — torch and torchvision alone are well over 100MB combined. If a package download times out partway through (this can happen on slower connections), just re-run the same `pip install -r requirements.txt` command — pip skips what's already installed and resumes the rest.
+If a download times out, run the same command again. It resumes where it left off.
 
 ### 4. Add your API key
 
-Create a file called `.env` inside the `backend/` folder (note the leading dot — it won't show in some file explorers by default) with this single line:
+Create a file called `.env` inside `backend/` with one line:
 
 ```
 ANTHROPIC_API_KEY=your_actual_key_here
 ```
 
-This file is intentionally excluded from the repo via `.gitignore` — never commit a real API key to GitHub.
+It is excluded from the repo by `.gitignore`. Never commit a real key.
 
-### 5. Verify the CNN loads correctly
-
-Before starting the server, confirm PyTorch and the clarity model actually work on your machine:
-
-```bash
-python -c "from clarity_checker import check_clarity; print('imported ok')"
-```
-
-If this prints `imported ok`, you're good. If it throws a DLL error, go back to step 1 — it almost always means either the Python version or the Visual C++ Redistributable.
-
-### 6. Run the server
+### 5. Start the server
 
 ```bash
 uvicorn app:app --reload --port 8080
 ```
 
-You should see `Uvicorn running on http://127.0.0.1:8080` with no errors underneath. **Keep this terminal window open the entire time you're using the app** — if it closes or the process stops, every feature will appear broken even though nothing is actually wrong with the code, since the frontend simply has no backend to talk to.
+You should see `Uvicorn running on http://127.0.0.1:8080`. Keep this terminal open. Open http://localhost:8080/health to check it: it should answer `"storage":"sqlite"` (your data stays in a local file).
 
-### 7. Open the app
+### 6. Start the page (a second terminal)
 
-Go to **http://localhost:8080/app** in your browser. On a phone on the same network, you can also install it to your home screen as a PWA directly from the browser menu.
+```bash
+cd cabinet-clear/frontend
+python3 -m http.server 8000
+```
+
+Then in `frontend/index.html`, change the line that starts with `const API =` to `http://localhost:8080` (don't commit that change), and open **http://localhost:8000**.
+
+> **Use port 8000 for the page.** The server only accepts browser requests from your own pages (localhost 8000 and 8080, and the deployed addresses). The older `/app` page served by the backend itself does not include the newer scripts (language switch, sign-in token, shelf scan, privacy), so use the page above, or the live link.
+
+### Running the tests
+
+From the `backend/` folder, with the virtual environment active:
+
+```bash
+for t in test_*.py; do ANTHROPIC_API_KEY=test python3 $t > /dev/null 2>&1 && echo "PASS  $t" || echo "FAIL  $t"; done
+```
+
+Every line should say `PASS`. No API key or internet connection is used (the value `test` is a placeholder). Run a file on its own to see its details: for example, `python3 test_reconcile.py` prints how the comparison engine scores against a naive baseline. On Windows, run the files one at a time (`python test_security.py`) after setting `$env:ANTHROPIC_API_KEY="test"`. To also test PostgreSQL, set `TEST_DATABASE_URL` to a database you don't mind filling with test data.
+
+---
+
+## Configuration
+
+Set these as environment variables (in `.env` locally, in the host's settings when deployed). Only the first is required.
+
+| Name | Purpose |
+|---|---|
+| `ANTHROPIC_API_KEY` | **Required.** Lets the server call Claude. |
+| `AUTH_SECRET` | Signs sign-in tokens. Without it, everyone is signed out when the server restarts. |
+| `DATABASE_URL` | A PostgreSQL address. With it, accounts and history are permanent. Without it, a local file is used (temporary on free hosting). |
+| `DATA_KEY` | A 32-byte key (base64) that turns on encryption of saved history. Keep a backup: lost key means unrecoverable history. Several keys separated by commas allow key rotation. |
+| `ALLOWED_ORIGINS` | Optional. Comma-separated list of pages allowed to call the server. |
+| `DAILY_AI_CALLS`, `AI_LIMIT_PER_10MIN` | Optional. Spending and speed limits. |
+
+---
+
+## AI Usage Disclosure
+
+AI is used in two ways, and both are disclosed here as the challenge requires.
+
+**1. Inside the app.** A Claude model (Anthropic API) reads discharge letters, medicine labels and shelf photos, and writes the plain-language explanations. Code around it checks the AI's work, as described under [Responsible AI](#responsible-ai).
+
+**2. While building the app.** Claude (Anthropic's AI assistant) was used during development. It wrote a large part of the code for version 2, working from requirements, decisions and bug reports given by the developer: the medication comparison, adaptive explanations, the Turkish/English switch, the security and privacy work, the database support, the whole-shelf scan, and the automated tests. The developer chose the problem and the features, set the safety rules, tested every feature on a real phone, found and reported problems, made the design decisions, deployed the app, and reviewed the Turkish text. **[FILL IN: who built the original June version, and whether any AI tools helped with it.]**
+
+**Not AI-generated:** **[FILL IN: for example, the clarity model, which you trained on ___ using ___ photos, and the original June version, which you built by ___]**
+
+---
+
+## Limitations and Known Issues
+
+- **Not medical advice.** The app organizes information that is already written down. It does not diagnose or recommend treatment.
+- **The AI can misread** a letter or label. That is why uncertain results go to "Unclear," and why the original text is always shown beside the summary.
+- **The clarity CNN's perfect score is optimistic** (see its section). It needs a larger independent test set.
+- **The whole-shelf scan** has been tested in code, but its accuracy on real shelf photos has not yet been measured. Small print on a shelf photo is often unreadable, so expect many packages to ask for a close-up.
+- **Free hosting:** the first request after a quiet period can take up to a minute.
+- **Encryption protects stored data, not against whoever holds the key.**
+- **Turkish:** some linked pages and FDA text remain in English.
+- **Test accounts only:** please don't enter real medical information in the public demo.
+
+---
+
+## Credits and Data Sources
+
+- **Anthropic Claude API** for language and image understanding.
+- **OpenFDA** drug label data for brand-to-generic mapping and interaction text.
+- **PyTorch**, **torchvision**, **pytorch-grad-cam**, **FastAPI**, **fpdf2**, **thefuzz**, **bcrypt**, **cryptography**.
+- **DejaVu Sans** font (shipped with matplotlib) for Turkish PDF text.
+- **Roboflow Universe** datasets listed in the research notes (credits above).
+- Clarity-model training photos: **[FILL IN: source and license]**.
+- Discharge letters in `sample_data/` are synthetic and were written for testing.
 
 ---
 
 ## Disclaimer
 
 Cabinet Clear organizes information only. It does not provide medical advice and does not replace consultation with a licensed doctor or pharmacist. Always confirm medication decisions with a healthcare professional.
-
----
-
-*Re-built for this hackathon with an improved frontend*
