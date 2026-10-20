@@ -89,9 +89,9 @@
       }).observe(card, { attributes: true, attributeFilter: ['class'] });
     }
 
-    // the history button on Home opens the History page
+    // history lives under Account, so the old "View My History" button on Home is removed
     var hb = document.querySelector('button[onclick="loadHistory()"]');
-    if (hb) { hb.removeAttribute('onclick'); hb.addEventListener('click', function () { go('history'); }); }
+    if (hb && hb.parentNode) hb.parentNode.removeChild(hb);
 
     // the language button goes into the header, so it cannot sit on top of other buttons
     moveLang();
