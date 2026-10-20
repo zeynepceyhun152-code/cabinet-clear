@@ -40,7 +40,7 @@
 
     var foot = document.createElement('div');
     foot.className = 'priv-foot';
-    foot.innerHTML = '<a id="privLink" role="button"><span>🔒</span> <span>Privacy</span></a>';
+    foot.innerHTML = '<a id="privLink" role="button">Privacy</a>';
     (document.querySelector('.container') || document.body).appendChild(foot);
 
     var modal = document.createElement('div');

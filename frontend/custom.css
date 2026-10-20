@@ -1,0 +1,82 @@
+/* custom.css - look and navigation for Cabinet Clear.
+   To undo everything in this file, delete the <link ... custom.css> line in index.html. */
+
+/* 0. iPhone zooms the page whenever you tap a field whose text is smaller than 16px.
+      Keeping every field at 16px stops the jump, and pinch-to-zoom still works for people who need it. */
+html { -webkit-text-size-adjust: 100%; }
+input, textarea, select { font-size: 16px !important; }
+
+/* 1. Tip boxes: one flat color, no gradient */
+.step-intro { background: var(--accent-light) !important; }
+
+/* 2. iPhone: keep content clear of the status bar (clock, battery) and the home bar */
+body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px);
+  background: var(--navy); z-index: 9990; pointer-events: none; }
+header { padding-top: calc(28px + env(safe-area-inset-top, 0px)); }
+body { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+
+/* 3. The language button lives inside the header, so it can't sit on top of other buttons */
+header #ccLangBtn { position: absolute !important; top: 0 !important; right: 0 !important; left: auto !important; width: auto !important; white-space: nowrap; }
+
+/* 4. Pages: only the current one shows */
+.view { display: none; }
+body[data-view="auth"] #viewAuth, body[data-view="account"] #viewAccount,
+body[data-view="history"] #viewHistory, body[data-view="check"] #viewCheck { display: block; }
+body[data-view]:not([data-view="home"]) header, body[data-view]:not([data-view="home"]) .container { display: none !important; }
+body[data-view="auth"] #bottomNav { display: none; }
+body[data-view="check"] #analyzeBtn { display: none; }
+body[data-view="history"] #historyCard > .step-header { display: none; }
+body[data-view="check"] #step2 > .step-intro { display: none; }
+body[data-view="check"] #step2 .step-num { display: none; }
+
+.view-bar { position: sticky; top: 0; z-index: 50; background: var(--navy); color: #fff; display: flex; align-items: center; gap: 6px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px; }
+.view-bar .back { background: none; border: none; color: #fff; width: 42px; height: 42px; display: flex; align-items: center;
+  justify-content: center; border-radius: 50%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.view-bar .back:active { background: rgba(255,255,255,0.18); }
+.view-bar .back svg { width: 24px; height: 24px; stroke: #fff; }
+.view-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 600; font-size: 1.05rem; letter-spacing: -0.01em; }
+.view-body { max-width: 640px; margin: 0 auto; padding: 16px 16px 24px; }
+#viewAuth #authCard { margin: 0 auto !important; padding: 0 !important; }
+
+/* 5. Bottom bar */
+#bottomNav { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; box-sizing: border-box; z-index: 9000; background: #fff; border-top: 1px solid var(--border);
+  display: flex; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -2px 10px rgba(15,23,42,0.06); }
+#bottomNav button { flex: 1 1 0; min-width: 0; background: none; border: none; font: inherit; font-size: 0.68rem; font-weight: 600; color: var(--muted);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 54px;
+  cursor: pointer; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
+#bottomNav button svg { width: 25px; height: 25px; }
+#bottomNav button.on { color: var(--accent); }
+#bottomNav button:active { background: var(--accent-light); }
+
+/* 6. Account page */
+.acct-head { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.acct-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--navy); color: #fff; display: flex;
+  align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
+.acct-name { font-weight: 700; color: var(--navy); font-size: 1.05rem; word-break: break-all; }
+.acct-sub { font-size: 0.8rem; color: var(--muted); }
+.acct-row { display: flex; align-items: center; justify-content: space-between; width: 100%; background: var(--card);
+  border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 16px; margin-bottom: 10px; font: inherit;
+  font-size: 0.92rem; font-weight: 600; color: var(--text); cursor: pointer; text-align: left; }
+.acct-row .val { color: var(--muted); font-weight: 500; font-size: 0.85rem; }
+.acct-row.danger { color: var(--red); }
+.acct-row:active { background: var(--accent-light); }
+#viewAccount .acct-del { margin-top: 30px; }
+.empty-view { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; text-align: center; }
+.empty-view p { color: var(--muted); font-size: 0.9rem; margin-bottom: 4px; }
+
+/* 7. Check a medicine (camera page) */
+.qc-panel { margin-top: 4px; }
+.qc-panel select { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 8px; font: inherit;
+  font-size: 0.9rem; background: var(--bg); color: var(--text); margin-bottom: 4px; }
+.qc-or { text-align: center; font-size: 0.8rem; color: var(--muted); margin: 18px 0 12px; }
+.qc-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
+.qc-name { font-weight: 600; color: var(--navy); font-size: 0.95rem; word-break: break-word; }
+.qc-meta { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+.qc-warn { font-size: 0.8rem; color: var(--yellow); margin-top: 3px; }
+.qc-title { font-weight: 700; color: var(--navy); margin: 18px 0 10px; }
+.qc-note { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
