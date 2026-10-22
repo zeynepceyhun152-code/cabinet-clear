@@ -10,13 +10,19 @@ from translate_server import tx
 # DejaVu Sans ships inside matplotlib, which your app already installs. If it is missing we fall back to
 # the built-in font and print the Turkish letters without their marks, so nothing is ever dropped.
 def _find_unicode_fonts():
+    """The Turkish-capable font files. First the project's own backend/fonts folder (so nothing else has to be installed),
+    then the copy that ships inside matplotlib. Returns None only if neither is there."""
+    folders = [Path(__file__).resolve().parent / "fonts"]
     try:
         import matplotlib
-        d = Path(matplotlib.get_data_path()) / "fonts" / "ttf"
-        files = {"": d / "DejaVuSans.ttf", "B": d / "DejaVuSans-Bold.ttf", "I": d / "DejaVuSans-Oblique.ttf"}
-        return files if all(p.exists() for p in files.values()) else None
+        folders.append(Path(matplotlib.get_data_path()) / "fonts" / "ttf")
     except Exception:
-        return None
+        pass
+    for d in folders:
+        files = {"": d / "DejaVuSans.ttf", "B": d / "DejaVuSans-Bold.ttf", "I": d / "DejaVuSans-Oblique.ttf"}
+        if all(p.exists() for p in files.values()):
+            return files
+    return None
 
 _TR_ASCII = str.maketrans("şŞğĞıİ", "sSgGiI")
 
