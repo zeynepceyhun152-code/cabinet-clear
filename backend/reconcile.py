@@ -30,22 +30,16 @@ BOTH_CHANGED = "dose_and_frequency_changed"
 UNCHANGED = "unchanged"
 NEEDS_REVIEW = "needs_review"
 
+UNKNOWN_NAME_DETAIL = "this app does not recognize this name, so it could not check whether it is the same as a medicine on the other list"
+OTHER_UNKNOWN_DETAIL = "the other list has a name this app does not recognize, so this may not be a real change"
 FUZZY_THRESHOLD = 0.85  # name similarity that triggers "please confirm", never an auto-match
 
 # ---------------------------------------------------------------- names
-# Curated on purpose. Do NOT merge the big FDA sample here: it contains junk mappings.
-BRAND_TO_GENERIC = {
-    "tylenol": "acetaminophen", "paracetamol": "acetaminophen", "calpol": "acetaminophen",
-    "advil": "ibuprofen", "motrin": "ibuprofen", "nurofen": "ibuprofen",
-    "aleve": "naproxen", "benadryl": "diphenhydramine", "claritin": "loratadine",
-    "zyrtec": "cetirizine", "pepcid": "famotidine", "prilosec": "omeprazole",
-    "ventolin": "albuterol", "proair": "albuterol", "proventil": "albuterol",
-    "flovent": "fluticasone", "zithromax": "azithromycin",
-    "augmentin": "amoxicillin clavulanate", "amoxil": "amoxicillin",
-    "lasix": "furosemide", "glucophage": "metformin", "zestril": "lisinopril",
-    "prinivil": "lisinopril", "coumadin": "warfarin", "synthroid": "levothyroxine",
-    "lopressor": "metoprolol tartrate", "toprol": "metoprolol succinate",
-}
+# One curated list shared with crossreference.py (see drug_names.py). The big FDA label sample is NOT used: it contains
+# non-medicines and marketing phrases such as "allergy relief", which would be unsafe to trust.
+from drug_names import SINGLE_BRANDS, COMBO_BRANDS, SYNONYMS, SALT_BRANDS, is_recognized
+
+BRAND_TO_GENERIC = {**SINGLE_BRANDS, **COMBO_BRANDS, **{k: v for k, v in SYNONYMS.items() if k != v}, **SALT_BRANDS}
 PHRASES = {
     "clavulanic acid": "clavulanate",
     "vitamin d3": "vitamin d", "vitamin d2": "vitamin d", "cholecalciferol": "vitamin d",
@@ -350,16 +344,34 @@ def compare_med_lists(before, after, fuzzy_threshold=FUZZY_THRESHOLD):
             [f"'{nb}' and '{na}' look similar but are not identical"],
             f"Is '{nb}' the same medicine as '{na}'? Please confirm with a pharmacist."))
 
-    # 3. what is left was removed or added
+    # 3a. a name this app does not know might be another name for something on the other list (a brand name, say).
+    #     In that case "stopped" and "new" could both be wrong, so ask instead of claiming.
+    left_b = [i for i in range(len(before)) if i not in used_b]
+    left_a = [j for j in range(len(after)) if j not in used_a]
+    unknown_b = [i for i in left_b if not is_recognized(kb[i][0])]
+    unknown_a = [j for j in left_a if not is_recognized(ka[j][0])]
+    other_has_unknown_for_b = bool(left_a) and bool(unknown_a)
+    other_has_unknown_for_a = bool(left_b) and bool(unknown_b)
+    if left_b and left_a and (unknown_b or unknown_a):
+        for lst, idxs, side in ((before, unknown_b, "before"), (after, unknown_a, "after")):
+            for i in idxs:
+                m = lst[i]
+                (used_b if side == "before" else used_a).add(i)
+                findings.append(_finding(
+                    NEEDS_REVIEW, [m] if side == "before" else [], [m] if side == "after" else [],
+                    [UNKNOWN_NAME_DETAIL],
+                    f"'{m.get('name')}' was not recognized. Is it another name for a medicine on the other list? Please ask a pharmacist."))
+
+    # 3b. what is left was removed or added
     for i, m in enumerate(before):
         if i not in used_b:
             findings.append(_finding(
-                STOPPED, [m], [], ["on the earlier list, not on the new list"],
+                STOPPED, [m], [], ["on the earlier list, not on the new list"] + ([OTHER_UNKNOWN_DETAIL] if other_has_unknown_for_b else []),
                 f"{m.get('name')} is not on the new list. Was it stopped on purpose, and what should be done with the supply at home?"))
     for j, m in enumerate(after):
         if j not in used_a:
             findings.append(_finding(
-                ADDED, [], [m], ["new on the discharge list"],
+                ADDED, [], [m], ["new on the discharge list"] + ([OTHER_UNKNOWN_DETAIL] if other_has_unknown_for_a else []),
                 f"{m.get('name')} is new. What is it for, and for how long should it be taken?"))
 
     order = {NEEDS_REVIEW: 0, STOPPED: 1, ADDED: 2, BOTH_CHANGED: 3, DOSE_CHANGED: 4, FREQ_CHANGED: 5, UNCHANGED: 6}

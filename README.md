@@ -506,7 +506,7 @@ AI is used in two ways, and both are disclosed here as the challenge requires.
 - **Anthropic Claude API** for language and image understanding.
 - **OpenFDA** drug label data for brand-to-generic mapping and interaction text.
 - **PyTorch**, **torchvision**, **pytorch-grad-cam**, **FastAPI**, **fpdf2**, **thefuzz**, **bcrypt**, **cryptography**.
-- **DejaVu Sans** font (shipped with matplotlib) for Turkish PDF text.
+- **DejaVu Sans** font (included in `backend/fonts`, with its free license) for Turkish PDF text.
 - **Roboflow Universe** datasets listed in the research notes (credits above).
 - Clarity-model training photos: **[FILL IN: source and license]**.
 - Discharge letters in `sample_data/` are synthetic and were written for testing.

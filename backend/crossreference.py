@@ -14,6 +14,10 @@ except:
     FDA_DRUG_DB = {}
     print("Warning: FDA drug database not found, using fallback only")
 
+# One reviewed name list shared with reconcile.py (see drug_names.py)
+from drug_names import SINGLE_BRANDS as _SB, SYNONYMS as _SY, SALT_BRANDS as _SALT, is_recognized as _is_known
+_SHARED_SINGLE = {**_SB, **{k: v for k, v in _SY.items() if k != v}, **{k: v.split()[0] for k, v in _SALT.items()}, "toprol xl": "metoprolol"}
+
 BRAND_TO_GENERIC = {
     "tylenol": "acetaminophen",
     "advil": "ibuprofen",
@@ -35,7 +39,7 @@ BRAND_TO_GENERIC = {
     "iburamin": "ibuprofen",
     "zinco": "zinc",
     "oladin": "olopatadine",
-    **FDA_DRUG_DB  # merge FDA data on top
+    **_SHARED_SINGLE,  # the FDA label sample is no longer merged in: it held non-medicines (sunscreens, soaps, 'allergy relief')
 }
 
 CRITICAL_WARNINGS = {
@@ -55,19 +59,27 @@ def canonicalize(name: str) -> str:
     clean = name.lower().strip()
     if clean in BRAND_TO_GENERIC:
         return BRAND_TO_GENERIC[clean]
-    for brand, generic in BRAND_TO_GENERIC.items():
-        if fuzz.ratio(clean, brand) >= 85:
-            return generic
-    known_generics = list(set(BRAND_TO_GENERIC.values()))
-    for generic in known_generics:
-        if fuzz.ratio(clean, generic) >= 85:
-            return generic
-    return clean
+    known_generics = set(BRAND_TO_GENERIC.values())
+    if clean in known_generics or _is_known(clean):
+        return clean          # already a real medicine name: never "correct" it into a different drug
+    # typo tolerance (for example a misread label): take the CLOSEST known name, not the first one found
+    best_ratio, best = 0, None
+    for candidate, answer in list(BRAND_TO_GENERIC.items()) + [(g, g) for g in known_generics]:
+        r = fuzz.ratio(clean, candidate)
+        if r >= 85 and r > best_ratio:
+            best_ratio, best = r, answer
+    return best if best else clean
 
 def names_match(name_a: str, name_b: str) -> bool:
     a = canonicalize(normalize(name_a))
     b = canonicalize(normalize(name_b))
-    return a == b or a in b or b in a or fuzz.ratio(a, b) >= 85
+    if a == b:
+        return True
+    # Two DIFFERENT medicines this app knows are never the same, however alike they look or sound
+    # (prednisone / prednisolone, citalopram / escitalopram, amoxicillin / ampicillin).
+    if _is_known(a) and _is_known(b):
+        return False
+    return a in b or b in a or fuzz.ratio(a, b) >= 85
 
 def cross_reference(discharge_data: dict, cabinet_meds: list) -> dict:
     prescribed = discharge_data.get("medications", [])

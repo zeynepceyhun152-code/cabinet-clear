@@ -1,0 +1,77 @@
+=====================================================================
+ Cabinet Clear: help me test a medication comparison tool
+=====================================================================
+Thank you for helping! This takes about 15 minutes.
+
+WHAT TO DO
+Write 5 made-up cases. In each case, imagine a person's medicine list BEFORE a
+hospital stay and the list on their NEW discharge letter. Then write what you
+think changed for each medicine.
+
+IMPORTANT
+- Do NOT use any real person's information. Real medicine names are fine, real
+  patients are not.
+- You have not seen the app. Please don't try to make the cases easy or hard
+  for it. Write them the way real lists look: brand names, abbreviations,
+  different units, extra words, whatever you would really see.
+- Please include a mix: some simple cases, some a careful pharmacist would
+  find tricky.
+
+WORDS TO USE AFTER "EXPECTED"
+  new | stopped | dose changed | frequency changed |
+  dose and frequency changed | unchanged | ask pharmacist
+("ask pharmacist" = you would not be sure without checking with someone.)
+
+WHAT TO SEND BACK
+This whole file, filled in. Put your role on the AUTHOR line (for example:
+pharmacist, nurse, doctor, student, parent, teacher). Your name is not needed.
+
+---------------------------------------------------------------------
+AUTHOR: (your role, for example "pharmacist")
+
+CASE 1
+BEFORE:
+- Lisinopril 10 mg once daily
+- Metformin 500 mg twice daily with meals
+- Tylenol 500 mg as needed
+AFTER:
+- Lisinopril 20 mg once daily
+- Atorvastatin 40 mg at bedtime
+- Acetaminophen 500 mg every 6 hours as needed
+EXPECTED:
+- Lisinopril: dose changed
+- Metformin: stopped
+- Atorvastatin: new
+- Acetaminophen: unchanged
+
+CASE 2
+BEFORE:
+-
+AFTER:
+-
+EXPECTED:
+-
+
+CASE 3
+BEFORE:
+-
+AFTER:
+-
+EXPECTED:
+-
+
+CASE 4
+BEFORE:
+-
+AFTER:
+-
+EXPECTED:
+-
+
+CASE 5
+BEFORE:
+-
+AFTER:
+-
+EXPECTED:
+-
