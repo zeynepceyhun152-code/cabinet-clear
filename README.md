@@ -20,7 +20,7 @@ Built by **[FILL IN: how you want to be credited]**. Cabinet Clear began as a ha
 | **Demo video** | **[FILL IN: link]** |
 | **Phone** | Open the link in Safari or Chrome, then *Share → Add to Home Screen*. It installs like an app. |
 | **Language** | The **Türkçe / English** button is in the top right corner. |
-| **Sample letters** | `sample_data/discharge_letters/`: open a `.txt`, copy the text, and paste it into the app. |
+| **Sample letters** | `sample_data/`: open a `.txt` file (for example `1_pediatric_asthma.txt`), copy the text, and paste it into the app. The same five letters are also there as `.pdf` and `.png`, to try uploads. |
 
 > **Heads-up:** the app runs on free hosting that goes to sleep when nobody is using it. The **first** request after a quiet spell can take up to a minute. Open the live link once, wait, and everything after that is fast.
 
@@ -377,8 +377,7 @@ cabinet-clear/
 │   ├── privacy.js              # Privacy note and delete-my-account
 │   ├── manifest.json, sw.js    # PWA config and service worker
 │   └── icon-*.png              # App icons
-└── sample_data/
-    └── discharge_letters/      # Synthetic test letters (txt/pdf/png × 5 scenarios)
+└── sample_data/                # Synthetic test letters: 5 scenarios, each as .txt, .pdf and .png
 ```
 
 ---
