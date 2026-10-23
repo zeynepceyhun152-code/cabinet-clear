@@ -12,6 +12,11 @@ uncertain decisions with a pharmacist or healthcare professional.
 
 > **Live demo:** https://cabinetclear.vercel.app\
 
+> It's 11 p.m. Maya, 9, is finally asleep after an asthma flare-up. Her dad is sitting at the kitchen table with a discharge letter full of dosing instructions in one hand and a drawer of old inhalers and amoxicillin bottles in the other, trying to figure out which ones are safe to use tonight and which ones have been expired since last winter. Cabinet Clear is built for that exact moment.
+
+<p align="center">
+  <img src="screenshots/results_screen.png" width="420" alt="Cabinet Clear results screen showing Keep/Dispose/Unclear/Pharmacy buckets">
+</p>
 
 ## Recognition
 
@@ -202,44 +207,55 @@ Deterministic rules handle several comparison and validation tasks.
 Those rules can still be incomplete, and the AI-generated output can
 still be wrong.
 
-## The image-classification model
+---
 
-Cabinet Clear uses a custom fine-tuned ResNet18 image classifier to
-estimate whether a medicine-package photo is clear enough to proceed.
+## The CNN, In Depth
 
-The model uses a pretrained ImageNet ResNet18 backbone. Earlier layers
-are frozen while later layers and the classification head are fine-tuned
-for the project's binary clarity task. The model produces a clarity
-prediction; it does not identify a medicine or verify its active
-ingredient.
+This is the one part of the app that is a neural network I trained myself, not an API call.
 
-### Training setup
+### Why it exists
 
--   **Original images:** 437 medicine-package images
--   **Generated variants:** Three altered versions per original image,
-    using blur, darkening, and downscaling/upscaling
--   **Total images after augmentation:** 1,748
--   **Train/validation split:** 1,398 / 350 images
--   **Training:** 8 epochs on a Google Colab T4 GPU
+Anyone can send a photo to an AI. But if the photo is blurry, dark, or too far away, the AI can guess, and a guessed drug name or expiry date is dangerous. So before the AI sees a medicine photo, my CNN answers one simple question: **is this photo clear enough to read?**
 
-### Evaluation caveat
+- **Trust score.** The CNN gives each photo a number between 0 (unclear) and 1 (clear): how confident it is that the photo can be read.
+- **Grad-CAM image.** A heat map shows where the CNN looked. If a photo is rejected, you see this map, so you can tell what was wrong (often the expiry date, a small low-contrast stamp) and retake just that shot.
 
-The reported validation results were perfect on the project's split.
-That result should not be interpreted as proof of real-world accuracy.
-Because augmented variants were generated from original images, a random
-image-level split can place highly similar versions of the same original
-package in both training and validation sets. This can inflate
-performance.
+### How I built it
 
-The model has also rejected some blurry photos taken on phones, but that
-does not establish robust performance across devices, lighting,
-packaging types, or users. A stronger evaluation would split by original
-package before augmentation and test on an independent collection of
-photos captured under varied real-world conditions.
+- **Model:** ResNet18, an existing image model already trained on millions of photos (ImageNet). I kept its early layers as they were, and retrained its last block plus a new final layer that outputs the trust score.
+- **Training:** 8 rounds, Google Colab with a T4 GPU.
+- **Why a classifier and not a segmentation model:** the question is "clear or not" for the whole photo, one label per image, so a classifier is the right tool.
 
-A YOLOv8s package-detection experiment performed well on its own images
-but generalized poorly to another dataset, so it was not used as the
-core photo-clarity model.
+| | |
+|---|---|
+| **Base images** | 437 photos of medicine tablets and boxes from the Kaggle dataset "Medicine tablet pack image dataset" (see Credits) |
+| **Unclear versions** | From each clear photo I made 3 unclear ones: blurred, darkened (poor lighting), and shrunk then enlarged (taken too far away) |
+| **Total** | 1,748 images (437 clear + 1,311 unclear) |
+| **Training / validation** | 1,398 / 350 |
+
+### Results
+
+```
+              precision    recall   f1-score
+   unclear        1.00      1.00      1.00
+     clear        1.00      1.00      1.00
+```
+
+<p align="center">
+  <img src="confusionmatrix.png" width="420" alt="Confusion matrix for the clarity classifier showing 270 unclear and 80 clear validation images, zero misclassifications">
+</p>
+
+**What this number really means:** a perfect score is too good to fully trust, because the unclear photos were made from the same clear photos the model learned from. It may partly recognize "a blurred copy of something I saw" instead of blur in general. In live tests it did reject blurry photos I took fresh on a phone. It was also trained on one small set of mostly Indian medicine packs, so it still needs testing on more varied photos from other people.
+
+### Checking that it learned the right thing
+
+A model can get the right answer for the wrong reason, like linking a tabletop texture to "clear". Grad-CAM lets me check. In the image below, warm colors (high attention) sit on the printed text of the label, not the background, which is evidence the CNN learned to judge the text.
+
+<p align="center">
+  <img src="gradcam.png" width="500" alt="Grad-CAM heatmap overlaid on a medicine box photo, showing the model's attention concentrated on the label text rather than the background">
+</p>
+
+---
 
 ## Testing and evaluation
 
@@ -346,21 +362,23 @@ Cabinet Clear developed through multiple iterations from June to October 2026. T
 
 I also tested approaches that did not generalize well and chose not to keep them as core functionality. The project continues to have limitations, particularly around independent evaluation of the photo-clarity model and the reliability of health-related outputs.
 
+## Credits
+
+- **Anthropic Claude API** for language and image understanding · **OpenFDA** for drug label data.
+- **PyTorch**, **torchvision**, **pytorch-grad-cam**, **FastAPI**, **fpdf2**, **thefuzz**, **bcrypt**, **cryptography**, **pg8000**.
+- **Neon** (database), **Render** (server) and **Vercel** (web page) for hosting.
+- **DejaVu Sans** font (in `backend/fonts`, with its license) for Turkish letters in PDFs.
+- CNN training photos: "Medicine tablet pack image dataset" by nitesh31mishra on Kaggle (https://www.kaggle.com/datasets/nitesh31mishra/medicine-tablet-pack-image-dataset). The dataset itself is not in this repository.
+- The discharge letters in `sample_data/` are made up, for testing.
+
+---
 
 ## AI usage disclosure
 
-I developed Cabinet Clear myself, including its core application logic,
-backend, medicine-matching and sorting rules, CNN training and
-integration, PDF export, account functionality, and frontend
-implementation. During development, I used Claude as a debugging
-assistant and for two minor visual adjustments to the frontend.
+**Inside the app:** The Claude API (Anthropic) reads discharge letters and medicine labels and writes the plain-language explanations. Code around it checks its work, as described above.
 
-The Claude API is also integrated into Cabinet Clear to extract
-information from discharge letters and medicine labels and to generate
-plain-language explanations. Using the API as part of the application is
-separate from using Claude as a development assistant. I am responsible
-for understanding, testing, and explaining the submitted implementation
-and its limitations.
+**While building it:** I developed Cabinet Clear myself, including its core application logic, backend, medicine-matching and sorting rules, CNN training and integration, PDF export, account functionality, and frontend implementation. During development, I used Claude as a debugging assistant and for minor visual adjustments to the frontend.
+
 
 ## Author
 
