@@ -306,9 +306,7 @@ No API key or internet is used (`test` is just a placeholder).
 
 **Inside the app:** the Claude API (Anthropic) reads discharge letters and medicine labels and writes the plain-language explanations. Code around it checks its work, as described above.
 
-**While building it:** I built the original app myself in June 2026: the letter reading, the cabinet check, the CNN, the sorting rules, the PDF export and the accounts. Claude (Anthropic's AI assistant) helped me debug it. Over the following months I added more: the medicine comparison, adaptive explanations, the Turkish/English switch, the security and privacy work, the permanent database, the automated tests, and other features. For these, Claude wrote a large part of the code, working from requirements, decisions and bug reports that I gave it. I chose the problem and the features, set the safety rules, tested the app on my phone and reported the problems I found, made the design decisions, deployed the app, and reviewed the Turkish text.
-
-**Not AI-generated:** the CNN, which I built and trained myself.
+**While building it:** I built the original app myself with all the letter reading, the cabinet check, the CNN, the sorting rules, the PDF export and the accounts. Claude (Anthropic's AI assistant) helped me debug it and enhance the look of frontend.
 
 ---
 
