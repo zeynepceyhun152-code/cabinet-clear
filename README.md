@@ -10,7 +10,7 @@ information from a discharge letter with medicine-label information,
 highlights possible discrepancies, and encourages users to confirm
 uncertain decisions with a pharmacist or healthcare professional.
 
-> **Live demo:** https://cabinetclear.vercel.app\
+> **Live demo:** [https://cabinetclear.vercel.app\](https://cabinet-clear-kjwl5au53-zeynepceyhun152-codes-projects.vercel.app/)
 
 > It's 11 p.m. Maya, 9, is finally asleep after an asthma flare-up. Her dad is sitting at the kitchen table with a discharge letter full of dosing instructions in one hand and a drawer of old inhalers and amoxicillin bottles in the other, trying to figure out which ones are safe to use tonight and which ones have been expired since last winter. Cabinet Clear is built for that exact moment.
 
