@@ -1,330 +1,376 @@
 # Cabinet Clear
 
-**Understand your discharge letter. Know exactly what to keep, take, or throw away.**
+**Understand your discharge letter. Make sense of your medicine cabinet.
+Know when to ask a pharmacist.**
 
-**Live app: https://cabinetclear.vercel.app** (deployed, so you can use it straight from this link, no account needed). The server runs on free hosting that sleeps when nobody is using it, so the first request after a quiet spell can take up to a minute. Made-up test letters are in `sample_data/`: open a `.txt`, copy the text, and paste it into the app.
+Cabinet Clear is a bilingual, AI-assisted health-literacy application
+designed to help people understand hospital discharge instructions and
+organize the medicines they already have at home. It connects
+information from a discharge letter with medicine-label information,
+highlights possible discrepancies, and encourages users to confirm
+uncertain decisions with a pharmacist or healthcare professional.
 
-> It's 11 p.m. Maya, 9, is finally asleep after an asthma flare-up. Her dad is sitting at the kitchen table with a discharge letter full of dosing instructions in one hand and a drawer of old inhalers and amoxicillin bottles in the other, trying to figure out which ones are safe to use tonight and which ones have been expired since last winter. Cabinet Clear is built for that exact moment.
+> **Live demo:** https://cabinetclear.vercel.app\
 
-<p align="center">
-  <img src="screenshots/results_screen.png" width="420" alt="Cabinet Clear results screen showing Keep/Dispose/Unclear/Pharmacy buckets">
-</p>
 
----
+## Recognition
 
-## Contents
+-   **USAII Global AI 2026 --- 3rd Place**, 
 
-1. [The Problem](#the-problem)
-2. [What It Does](#what-it-does)
-3. [Why AI, Not Just a Search Engine](#why-ai-not-just-a-search-engine)
-4. [Architecture](#architecture)
-5. [AI Components](#ai-components)
-6. [Responsible AI](#responsible-ai)
-7. [The CNN, In Depth](#the-cnn-in-depth)
-8. [Tech Stack](#tech-stack)
-9. [Project Structure](#project-structure)
-10. [Development Timeline](#development-timeline)
-11. [Running It On Your Own Computer](#running-it-on-your-own-computer)
-12. [AI Usage Disclosure](#ai-usage-disclosure)
-13. [Credits](#credits)
-14. [Disclaimer](#disclaimer)
+## Table of Contents
 
----
+- [The problem](#the-problem)
+- [What Cabinet Clear does](#what-cabinet-clear-does)
+- [How it works](#how-it-works)
+- [AI and software components](#ai-and-software-components)
+- [The image-classification model](#the-image-classification-model)
+- [Testing and evaluation](#testing-and-evaluation)
+- [Responsible use and limitations](#responsible-use-and-limitations)
+- [Technology stack](#technology-stack)
+- [Run locally](#run-locally)
+- [Project timeline](#project-timeline)
+- [AI usage disclosure](#ai-usage-disclosure)
+- [Author](#author)
+- [Disclaimer](#disclaimer)
 
-## The Problem
+## The problem
 
-Every year, families leave the hospital with a discharge letter full of medical jargon and a medicine cabinet full of bottles they're not sure about. People miss doses, take expired medication, or skip follow-ups — not from carelessness, but because the information was never designed for someone exhausted and stressed.
+After a medical appointment or hospital discharge, people may receive
+instructions that are difficult to understand while they are stressed,
+tired, or overwhelmed. At home, they may also face a cabinet of medicine
+packages with unfamiliar names, similar-looking labels, or confusing
+expiry information.
 
-I know this from my own family. When I was diagnosed with prediabetes, my mom, who is a doctor, and I still could not follow what the doctor explained. We were too emotional in that room, and the discharge letter was full of medical words. At home the questions kept coming, and none of them could be asked in the moment. Then I looked at our two medicine cabinets, packed with bottles, and could not tell what was in them or what had expired. So there were two problems: you can't understand your letter, and you can't trust your cabinet. Cabinet Clear solves both, and I use it myself.
+I became interested in this problem after experiencing how difficult
+medical information can be to process during an emotionally stressful
+situation. My mother is a doctor, but medical knowledge does not
+eliminate the difficulty of trying to understand and act on information
+when you are personally affected by it. Cabinet Clear grew from that
+experience: I wanted to build a tool that makes the next steps easier to
+understand without pretending to replace a clinician or pharmacist.
 
----
+## What Cabinet Clear does
 
-## What It Does
+### 1. Reads discharge instructions
 
-- **Reads your letter.** Paste it, upload a PDF, or take a photo. You get plain language: the diagnosis, each medicine, follow-ups, and warning signs ranked by urgency.
-- **Fits how you feel.** Two optional questions (how overwhelmed you are, how much you understood) give you a short calm explanation, a standard one, or a detailed one. A checker compares every explanation with the letter, and if a dose, medicine or warning sign does not match, the app shows a plain version taken straight from the letter. If you are still confused, it links to 13 trusted reading pages (hospitals, government, professional societies). Simple rules pick the links, not the AI, so there are no made-up links.
-- **Checks your photos first.** Before anything is read, a CNN I built checks that each medicine photo is clear enough. It gives the photo a trust score, and a rejected photo comes back with a Grad-CAM image showing where the CNN looked (see [The CNN](#the-cnn-in-depth)). A medicine can have two photos, one for the front label and one for the expiry date, and they are merged into one reading.
-- **Sorts your medicines** into Keep, Dispose, Unclear, or Get from Pharmacy. The app works out expiry dates itself, warns about risky combinations, and makes a PDF to bring to your pharmacist.
-- **Matches names.** Tylenol and acetaminophen are the same medicine. The app uses a shared list of 311 brand and generic names (including Turkish spellings) and copes with misread letters. It never treats two different medicines, like citalopram and escitalopram, as the same.
-- **Shows what changed.** Paste the medicines you took before the hospital. The app compares them with the letter and shows what is new, stopped, or changed, and asks you to check with a pharmacist instead of deciding. This is plain Python rules, not AI.
-- **Works on your phone,** installs like an app, and also works in Turkish.
-- **Saves your history (optional).** Sign in to keep past letters and cabinet checks. Saved history is encrypted, and you can delete your account and everything in it at any time.
+Users can provide discharge-letter content as pasted text, a PDF, or a
+photo. The application extracts key information such as:
 
----
+-   Diagnoses and relevant context
+-   Medicines and instructions mentioned in the letter
+-   Follow-up appointments or actions
+-   Warning signs and situations where medical help may be needed
 
-## Why AI, Not Just a Search Engine
+The extracted information is presented in more accessible language.
+Users should compare the result with the original letter and contact
+their care team when anything is unclear.
 
-A general chatbot can explain medical terms. It can't tell you that the ibuprofen bottle in your cabinet matches your discharge prescription but expired eight months ago, or that two of your "keep" medicines can interact. That means combining information from two different messy sources, a letter and a photo, which is exactly what this app does.
+### 2. Adapts explanations to the user
 
----
+Cabinet Clear asks brief questions about how overwhelmed or confident
+the user feels. It uses the responses to adjust the length and style of
+its explanation. The goal is to make information more manageable, not to
+make medical decisions on the user's behalf.
 
-## Architecture
+### 3. Checks medicine-photo clarity before extraction
 
+A custom image-classification model checks whether a medicine-package
+photo is clear enough for the next step. If the photo is rejected,
+Grad-CAM visualizations help inspect which image regions influenced the
+model's prediction.
+
+Users can submit a package's front label and a separate expiry-date
+photo. A rejected or unclear image should be retaken rather than treated
+as reliable evidence.
+
+### 4. Matches medicine names
+
+The application uses a shared list of 311 brand and generic names,
+including Turkish spellings, together with fuzzy matching to help
+connect different names for the same medicine. Matching logic is tested
+against a large set of name pairs to reduce accidental merges between
+distinct medicines.
+
+Name matching is not proof that two packages contain the same product.
+The label and medicine details still need to be checked.
+
+### 5. Helps organize a medicine cabinet
+
+Based on available label and expiry information, Cabinet Clear groups
+items into review categories such as **Keep**, **Dispose**, **Unclear**,
+or **Ask a Pharmacist**. It can flag expiry concerns and selected
+possible interaction warnings.
+
+These are prompts for review, not instructions to start, stop, discard,
+or combine medicines. Users should confirm uncertain items and any
+medication changes with a pharmacist or qualified healthcare
+professional.
+
+### 6. Compares medicine lists
+
+Rule-based Python logic compares medicines mentioned before discharge
+with the discharge list to identify possible additions, removals, or
+changes. This is intended to help users prepare questions for their
+healthcare team.
+
+### 7. Supports practical follow-through
+
+Other features include:
+
+-   A PDF summary that can be taken to a pharmacist
+-   Thirteen trusted health-resource links selected by rules
+-   English and Turkish interfaces
+-   Progressive Web App (PWA) support
+-   Optional accounts and saved history
+-   Encrypted saved history and account deletion
+
+Feature availability can depend on the deployment and configuration.
+
+## How it works
+
+Cabinet Clear deliberately combines language-model assistance with
+deterministic application logic. The language model is useful for
+interpreting unstructured text, while explicit Python rules are used for
+tasks that benefit from predictable comparisons.
+
+``` text
+Discharge letter / medicine photos
+              |
+              v
+     Input processing and checks
+              |
+      +-------+----------------+
+      |                        |
+      v                        v
+Claude API                Custom ResNet18 CNN
+letter/label extraction   photo-clarity check
+and plain-language output         |
+      |                           v
+      |                    Accept / retake photo
+      +------------+--------------+
+                   |
+                   v
+       Python rules and reference data
+       - medicine-name matching
+       - expiry checks
+       - selected interaction warnings
+       - pre-/post-discharge comparison
+       - trusted-resource selection
+                   |
+                   v
+      Reviewable results and PDF summary
 ```
-+----------------------+         +------------------------------+
-|  Discharge Letter     |         |   Medicine Photo(s)            |
-|  (text / PDF / image) |         |   front label + expiry date    |
-+-----------+-----------+         +---------------+----------------+
-            |                                     |
-            v                                     v
-    Claude reads the letter             My CNN checks the photo
-    -> structured facts                 (clear enough to read?)
-    (medicines, follow-ups,                       |
-     warning signs)                      clear? --+-- unclear?
-            |                              |             |
-            |                              v             v
-            |                    Claude reads       "Retake photo"
-            |                    name, dose,        + Grad-CAM image
-            |                    expiry date
-            |                              |
-            v                              v
-    +-------------------------------------------+
-    |        Fixed rules (plain Python)           |
-    |  - Brand and generic name matching          |
-    |  - Fixing misread letters                   |
-    |  - Expiry check                             |
-    |  - Interaction warnings                     |
-    +---------------------+-----------------------+
-                          v
-          Keep / Dispose / Unclear / Get from Pharmacy
-                          |
-                          v
-                 Plain-language page + PDF
-```
 
-Where it runs: the page you open is on **Vercel**, the server (FastAPI) is on **Render**, and accounts and history are stored in a **Neon** PostgreSQL database.
+The diagram is a high-level overview. It does not mean that every
+feature runs in a single linear sequence.
 
-```
-Phone / browser (Vercel)  ->  Server (Render)  ->  Claude API · OpenFDA · Database (Neon)
-```
+## AI and software components
 
----
+  -----------------------------------------------------------------------
+  Component                           Purpose
+  ----------------------------------- -----------------------------------
+  Claude API                          Extracts information from discharge
+                                      letters and medicine labels and
+                                      generates plain-language
+                                      explanations
 
-## AI Components
+  Custom ResNet18 CNN                 Classifies whether a
+                                      medicine-package photo is
+                                      sufficiently clear for further
+                                      processing
 
-| Part | What it does | Built with |
-|---|---|---|
-| **Photo clarity check** | Decides if a medicine photo is clear enough to read, and gives a trust score | My CNN: ResNet18 (PyTorch), trained on 1,748 images |
-| **Grad-CAM image** | Shows where the CNN looked | Grad-CAM |
-| **Reading and explaining** | Reads letters and labels, ranks warning signs, writes the explanations | Claude API (Anthropic) |
-| **Explanation checker** | Compares every explanation with the letter | Python rules |
-| **Name matching** | Matches brand and generic names, fixes misread letters | Shared list of 311 names + typo matching (no AI) |
-| **Medicine comparison** | Finds what changed between two medicine lists | Python rules (no AI) |
-| **Interaction warnings** | Flags risky combinations among kept medicines | A small hand-checked list + OpenFDA label text |
-| **Sorting rules** | Makes every Keep / Dispose / Unclear decision | Python rules |
-| **Accounts and history** | Stores accounts and saved checks safely | PostgreSQL (Neon), bcrypt, AES-256-GCM encryption |
+  Grad-CAM                            Helps visualize image regions
+                                      associated with a CNN prediction
 
-**Why plain rules make the final decision.** A wrong "Keep" or "Dispose" could hurt someone, and an AI can make things up. So the AI only reads messy documents, and simple rules that I can read and test make every decision.
+  Python rules                        Handles medicine-name matching,
+                                      expiry checks, selected interaction
+                                      warnings, and medication-list
+                                      comparison
 
----
+  PostgreSQL / SQLite                 Stores application data and
+                                      history, depending on the
+                                      environment
 
-## Responsible AI
+  FastAPI                             Backend API
 
-**The app never tells anyone to start, stop, or change a medicine.** That stays with a doctor or pharmacist. It only organizes what is already written down and checks facts like expiry dates.
+  React-based frontend                User interface and deployed web
+                                      experience
+  -----------------------------------------------------------------------
 
-**The biggest risk** is that the AI misreads a drug name, invents a detail, or misjudges a date. Here is what protects against that:
-- **Unsure means "Unclear".** Every read comes with a confidence level. A low-confidence read never goes to Keep or Dispose. It goes to "Unclear: ask your pharmacist", the same as a missing answer.
-- **Bad photos never reach the AI.** The CNN rejects them first.
-- **The original text is always shown** next to the AI's summary, so you can check it.
-- **Explanations are checked.** Code verifies that every medicine, dose and number matches the letter, that nothing was invented, that every warning sign is there, and that no unsafe advice (like "stop the medicine") appears.
-- **Expiry is worked out by code.** The AI only copies the printed date.
-- **Your data is protected.** Signed sign-in tokens, limits on how often the AI can be called, encrypted history, and uploads deleted after processing. My own review found a hole where history could be read by guessing a username. I fixed it and added tests.
+The application does not rely on the language model for every decision.
+Deterministic rules handle several comparison and validation tasks.
+Those rules can still be incomplete, and the AI-generated output can
+still be wrong.
 
-**How it was tested** (no API key or internet needed):
-- **Medicine comparison:** 35 cases covering 50 medicines, **50 of 50 correct**, against 24 of 50 for plain text matching. I wrote the cases myself.
-- **Name matching:** every pair of different medicines in the 311-name list (over 160,000 pairs) was checked, and none are merged. A bug I found, which treated citalopram and escitalopram as the same, was fixed.
-- **Explanation checker:** 47 explanations I damaged on purpose (wrong dose, invented medicine, dropped warning sign, unsafe advice). **All 47 were caught.**
-- **Security, privacy and storage** (SQLite and PostgreSQL): all tests pass.
+## The image-classification model
 
----
+Cabinet Clear uses a custom fine-tuned ResNet18 image classifier to
+estimate whether a medicine-package photo is clear enough to proceed.
 
-## The CNN, In Depth
+The model uses a pretrained ImageNet ResNet18 backbone. Earlier layers
+are frozen while later layers and the classification head are fine-tuned
+for the project's binary clarity task. The model produces a clarity
+prediction; it does not identify a medicine or verify its active
+ingredient.
 
-This is the one part of the app that is a neural network I trained myself, not an API call.
+### Training setup
 
-### Why it exists
+-   **Original images:** 437 medicine-package images
+-   **Generated variants:** Three altered versions per original image,
+    using blur, darkening, and downscaling/upscaling
+-   **Total images after augmentation:** 1,748
+-   **Train/validation split:** 1,398 / 350 images
+-   **Training:** 8 epochs on a Google Colab T4 GPU
 
-Anyone can send a photo to an AI. But if the photo is blurry, dark, or too far away, the AI can guess, and a guessed drug name or expiry date is dangerous. So before the AI sees a medicine photo, my CNN answers one simple question: **is this photo clear enough to read?**
+### Evaluation caveat
 
-- **Trust score.** The CNN gives each photo a number between 0 (unclear) and 1 (clear): how confident it is that the photo can be read.
-- **Grad-CAM image.** A heat map shows where the CNN looked. If a photo is rejected, you see this map, so you can tell what was wrong (often the expiry date, a small low-contrast stamp) and retake just that shot.
+The reported validation results were perfect on the project's split.
+That result should not be interpreted as proof of real-world accuracy.
+Because augmented variants were generated from original images, a random
+image-level split can place highly similar versions of the same original
+package in both training and validation sets. This can inflate
+performance.
 
-### How I built it
+The model has also rejected some blurry photos taken on phones, but that
+does not establish robust performance across devices, lighting,
+packaging types, or users. A stronger evaluation would split by original
+package before augmentation and test on an independent collection of
+photos captured under varied real-world conditions.
 
-- **Model:** ResNet18, an existing image model already trained on millions of photos (ImageNet). I kept its early layers as they were, and retrained its last block plus a new final layer that outputs the trust score.
-- **Training:** 8 rounds, Google Colab with a T4 GPU.
-- **Why a classifier and not a segmentation model:** the question is "clear or not" for the whole photo, one label per image, so a classifier is the right tool.
+A YOLOv8s package-detection experiment performed well on its own images
+but generalized poorly to another dataset, so it was not used as the
+core photo-clarity model.
 
-| | |
+## Testing and evaluation
+
+The project includes developer-created tests for core logic and known
+failure cases. These tests are useful for checking implementation
+behavior, but they are not clinical validation or an independent audit.
+
+Reported test results include:
+
+-   **Medication-list comparison:** 35 test cases covering 50 medicines;
+    50/50 correct in the tested cases, compared with 24/50 using a
+    plain-text comparison baseline.
+-   **Medicine-name matching:** All pairs from the 311-name reference
+    list were checked, representing more than 160,000 pairwise
+    comparisons. After fixing a citalopram/escitalopram matching issue,
+    no distinct medicines were merged in that test set.
+-   **Explanation checking:** 47 deliberately corrupted explanations
+    were detected in the project's tests.
+-   **Security and storage:** Application tests were run for
+    saved-history access and related storage behavior, including a fix
+    for a prior issue where history could be accessed by guessing a
+    username.
+
+These results describe the project's own test cases. They do not show
+that every medication, interaction, expiry date, or generated
+explanation will be handled correctly. The application has not been
+independently clinically validated or independently security-audited.
+
+## Responsible use and limitations
+
+Cabinet Clear is a health-literacy and organization tool, not a medical
+device or a substitute for professional care.
+
+-   AI may omit, misread, or invent information.
+-   A photo-clarity prediction does not verify the identity or contents
+    of a medicine package.
+-   Medicine-name matching may produce false matches or miss equivalent
+    names.
+-   Expiry information and interaction warnings may be incomplete or
+    incorrect.
+-   The application cannot determine whether a medicine is appropriate
+    for a particular person.
+-   Do not start, stop, change, combine, or discard medication based
+    only on Cabinet Clear.
+-   Confirm uncertain information and medication decisions with a
+    pharmacist or healthcare professional.
+-   For urgent or severe symptoms, seek appropriate medical care rather
+    than relying on the application.
+
+The interface is designed to surface uncertainty and encourage review,
+but those safeguards do not eliminate risk.
+
+## Technology stack
+
+-   **Frontend:** React-based web application
+-   **Backend:** Python, FastAPI
+-   **Language model integration:** Claude API
+-   **Computer vision:** PyTorch, ResNet18, Grad-CAM
+-   **Data and storage:** PostgreSQL through Neon in the deployed setup;
+    SQLite for local development
+-   **Deployment:** Vercel frontend and Render backend
+-   **Additional capabilities:** PDF export, PWA support, optional
+    accounts, English/Turkish support
+
+## Run locally
+
+The exact environment variables and commands may change as the project
+evolves. Check the repository's current files before running the
+application.
+
+1.  Clone the repository:
+
+    ``` bash
+    git clone https://github.com/zeynepceyhun152-code/cabinet-clear-with-a-better-frontend.git
+    cd cabinet-clear-with-a-better-frontend
+    ```
+
+2.  Inspect the frontend and backend directories and their dependency
+    files.
+
+3.  Configure the environment variables required by the current backend,
+    including the Claude API key and any database or authentication
+    settings. Do not commit API keys or secrets to version control.
+
+4.  Install the dependencies specified by the project and start the
+    backend and frontend using the commands documented in their
+    respective configuration files.
+
+5.  For local development, use synthetic discharge letters and sample
+    medicine images. Do not use real patient data in development or
+    testing.
+
+## Project timeline
+
+Cabinet Clear developed through multiple iterations from June to October 2026. The milestones below summarize the progression; they are not a claim that every feature was completed on a single date.
+
+| Period | Development |
 |---|---|
-| **Base images** | 437 photos of medicine tablets and boxes from the Kaggle dataset "Medicine tablet pack image dataset" (see Credits) |
-| **Unclear versions** | From each clear photo I made 3 unclear ones: blurred, darkened (poor lighting), and shrunk then enlarged (taken too far away) |
-| **Total** | 1,748 images (437 clear + 1,311 unclear) |
-| **Training / validation** | 1,398 / 350 |
+| **June 2026** | Built the initial version of Cabinet Clear around helping users understand discharge instructions and make sense of medicine information. |
+| **Following iterations** | Expanded the medicine-cabinet workflow with medicine-name matching, expiry checks, selected interaction warnings, and a PDF summary for pharmacist discussions. |
+| **Later development** | Added medication-list comparison to help surface possible differences between pre-discharge and discharge medicine lists. |
+| **Later development** | Added adaptive explanations, trusted-resource links, and broader English/Turkish support. |
+| **October 2026** | Continued refining the interface, optional saved history, account and storage protections, and the overall deployed experience. Also documented testing results and remaining evaluation limitations. |
 
-### Results
+I also tested approaches that did not generalize well and chose not to keep them as core functionality. The project continues to have limitations, particularly around independent evaluation of the photo-clarity model and the reliability of health-related outputs.
 
-```
-              precision    recall   f1-score
-   unclear        1.00      1.00      1.00
-     clear        1.00      1.00      1.00
-```
 
-<p align="center">
-  <img src="confusionmatrix.png" width="420" alt="Confusion matrix for the clarity classifier showing 270 unclear and 80 clear validation images, zero misclassifications">
-</p>
+## AI usage disclosure
 
-**What this number really means:** a perfect score is too good to fully trust, because the unclear photos were made from the same clear photos the model learned from. It may partly recognize "a blurred copy of something I saw" instead of blur in general. In live tests it did reject blurry photos I took fresh on a phone. It was also trained on one small set of mostly Indian medicine packs, so it still needs testing on more varied photos from other people.
+I developed Cabinet Clear myself, including its core application logic,
+backend, medicine-matching and sorting rules, CNN training and
+integration, PDF export, account functionality, and frontend
+implementation. During development, I used Claude as a debugging
+assistant and for two minor visual adjustments to the frontend.
 
-### Checking that it learned the right thing
+The Claude API is also integrated into Cabinet Clear to extract
+information from discharge letters and medicine labels and to generate
+plain-language explanations. Using the API as part of the application is
+separate from using Claude as a development assistant. I am responsible
+for understanding, testing, and explaining the submitted implementation
+and its limitations.
 
-A model can get the right answer for the wrong reason, like linking a tabletop texture to "clear". Grad-CAM lets me check. In the image below, warm colors (high attention) sit on the printed text of the label, not the background, which is evidence the CNN learned to judge the text.
+## Author
 
-<p align="center">
-  <img src="gradcam.png" width="500" alt="Grad-CAM heatmap overlaid on a medicine box photo, showing the model's attention concentrated on the label text rather than the background">
-</p>
-
----
-
-## Tech Stack
-
-**Backend:** FastAPI · PyTorch · torchvision · pytorch-grad-cam · thefuzz · fpdf2 · bcrypt · cryptography · pg8000
-**Frontend:** Vanilla HTML/CSS/JS · installable web app · English and Turkish
-**AI:** Claude API (Anthropic) · my ResNet18 CNN
-**Storage:** PostgreSQL on Neon (SQLite when run locally)
-**Hosting:** Vercel (page) · Render (server) · Neon (database)
-**Data:** OpenFDA drug label API · a shared medicine-name list · made-up discharge letters · a public Kaggle dataset of medicine photos (CNN training)
-
----
-
-## Project Structure
-
-```
-cabinet-clear/
-├── backend/
-│   ├── app.py                  # FastAPI server, all endpoints
-│   ├── extraction.py           # Discharge letter extraction + urgency scoring
-│   ├── medicine_extraction.py  # Medicine label extraction
-│   ├── crossreference.py       # Name matching + sorting rules
-│   ├── reconcile.py            # Before/after medicine comparison (no AI)
-│   ├── drug_names.py           # Shared brand/generic name list
-│   ├── explain.py              # Adaptive explanations + checker
-│   ├── resources.py            # Trusted reading links, chosen by rules
-│   ├── interaction_checker.py  # Drug interaction detection
-│   ├── clarity_checker.py      # CNN + Grad-CAM
-│   ├── pdf_generator.py        # PDF summary export
-│   ├── security.py             # Tokens, rate limits, daily cap
-│   ├── database.py             # Accounts + history (PostgreSQL / SQLite, bcrypt)
-│   ├── crypto_store.py         # Encryption of saved history
-│   ├── clarity_model.pth       # Trained CNN weights
-│   ├── fonts/                  # Font for Turkish letters in PDFs
-│   ├── test_*.py               # Automated tests
-│   └── requirements.txt        # Python dependencies
-├── frontend/
-│   ├── index.html              # Full app UI
-│   ├── nav.js, custom.css      # Pages, bottom bar, design
-│   ├── session.js              # Sign-in and saving history
-│   ├── i18n.js, tr.json        # English / Turkish
-│   ├── privacy.js              # Privacy note, delete my account
-│   ├── manifest.json           # Phone install settings
-│   └── sw.js                   # Service worker
-├── screenshots/
-│   └── results_screen.png      # App screenshot used above
-├── confusionmatrix.png         # CNN validation results
-├── gradcam.png                 # CNN Grad-CAM example
-└── sample_data/                # Made-up test letters (txt/pdf/png × 5 scenarios)
-```
-
----
-
-## Development Timeline
-
-| When | What I did |
-|---|---|
-| **June 2026** | Started Cabinet Clear at a hackathon and built the original app: reading discharge letters, scanning medicines, the CNN clarity check, the sorting rules, drug interaction warnings, the PDF summary, accounts, and installing it on a phone. |
-| **October 2026 (fall break)** | Added the "What changed?" comparison, adaptive explanations with a checker, trusted reading links, the shared 311-name medicine list, and the Turkish/English switch. |
-| **October 2026** | Added security and privacy (sign-in tokens, rate limits, encrypted history, delete my account) and a permanent database on Neon. |
-| **October 2026** | New design: separate pages for sign-in, history, scanning and your plan, a bottom bar, and a medicine check without a letter. Also trained a package detector (YOLOv8s) as research: 99.5% on its own photos but only 43% on photos from another dataset, so I kept it out of the app. |
-| **Late October 2026** | Tested on my phone and fixed what I found (iPhone zoom, Turkish letters in PDFs, history not saving, a bug that treated look-alike drugs as the same). Wrote the automated tests, then froze the code for submission. |
-
----
-
-## Running It On Your Own Computer
-
-You can also just use the live app above. To run it yourself:
-
-**You need:** Python 3.11 or 3.12 (newer versions can break PyTorch on Windows), and an [Anthropic API key](https://console.anthropic.com). On Windows, install the [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) and restart if PyTorch shows a `DLL initialization failed` error.
-
-**1. Get the code and make a virtual environment**
-
-```bash
-git clone https://github.com/zeynepceyhun152-code/cabinet-clear-with-a-better-frontend.git
-cd cabinet-clear-with-a-better-frontend/backend
-python3.12 -m venv venv
-source venv/bin/activate          # Windows: py -3.12 -m venv venv, then .\venv\Scripts\Activate.ps1
-```
-
-**2. Install the packages** (takes a few minutes; if a download times out, run it again)
-
-```bash
-pip install -r requirements.txt
-```
-
-**3. Add your API key.** Create a file called `.env` in `backend/` with one line (it is kept out of the repo, never commit a real key):
-
-```
-ANTHROPIC_API_KEY=your_actual_key_here
-```
-
-When deployed, the server also reads `AUTH_SECRET` (signs sign-in tokens), `DATABASE_URL` (PostgreSQL) and `DATA_KEY` (turns on history encryption; keep a backup, since a lost key means unrecoverable history).
-
-**4. Start the server** and keep this terminal open:
-
-```bash
-uvicorn app:app --reload --port 8080
-```
-
-**5. Start the page** in a second terminal:
-
-```bash
-cd frontend && python3 -m http.server 8000
-```
-
-In `frontend/index.html`, set the line that starts with `const API =` to `http://localhost:8080` (don't commit that change), then open **http://localhost:8000**.
-
-**6. Run the tests (optional).** From `backend/`, after `pip install pypdf`:
-
-```bash
-for t in test_*.py; do ANTHROPIC_API_KEY=test python3 $t > /dev/null 2>&1 && echo "PASS  $t" || echo "FAIL  $t"; done
-```
-
-No API key or internet is used (`test` is just a placeholder).
-
----
-
-## AI Usage Disclosure
-
-**Inside the app:** the Claude API (Anthropic) reads discharge letters and medicine labels and writes the plain-language explanations. Code around it checks its work, as described above.
-
-**While building it:** I built the original app myself with all the letter reading, the cabinet check, the CNN, the sorting rules, the PDF export and the accounts. Claude (Anthropic's AI assistant) helped me debug it and enhance the look of frontend.
-
----
-
-## Credits
-
-- **Anthropic Claude API** for language and image understanding · **OpenFDA** for drug label data.
-- **PyTorch**, **torchvision**, **pytorch-grad-cam**, **FastAPI**, **fpdf2**, **thefuzz**, **bcrypt**, **cryptography**, **pg8000**.
-- **Neon** (database), **Render** (server) and **Vercel** (web page) for hosting.
-- **DejaVu Sans** font (in `backend/fonts`, with its license) for Turkish letters in PDFs.
-- CNN training photos: "Medicine tablet pack image dataset" by nitesh31mishra on Kaggle (https://www.kaggle.com/datasets/nitesh31mishra/medicine-tablet-pack-image-dataset). The dataset itself is not in this repository.
-- The discharge letters in `sample_data/` are made up, for testing.
-
----
+**Zeynep Ceyhun**\
+GitHub: [zeynepceyhun152-code](https://github.com/zeynepceyhun152-code)
 
 ## Disclaimer
 
-Cabinet Clear organizes information only. It does not provide medical advice and does not replace consultation with a licensed doctor or pharmacist. Always confirm medication decisions with a healthcare professional. Please do not enter real medical information in the public demo.
-
----
-
-Built by Zeynep Ceyhun, grade 11, Thomas Jefferson School.
+Cabinet Clear is an educational software project. It is not intended to
+diagnose, treat, or prevent any disease, and it does not replace a
+doctor, pharmacist, emergency service, or official medication
+instructions. Always verify medicine information with a qualified
+healthcare professional.
