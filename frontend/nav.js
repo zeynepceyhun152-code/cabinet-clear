@@ -47,8 +47,9 @@
     if (el && ph && ph.parentNode) ph.parentNode.insertBefore(el, ph);
   }
 
-  function bar(title) {
-    return '<div class="view-bar"><button type="button" class="back" data-go="home" aria-label="Back to home">' + ICON.back +
+  function bar(title, back) {
+    return '<div class="view-bar"><button type="button" class="back" data-go="' + (back || 'home') + '" aria-label="' +
+           (back === 'scan' ? 'Back to scan' : 'Back to home') + '">' + ICON.back +
            '</button><span class="view-title">' + title + '</span></div>';
   }
 
@@ -65,6 +66,11 @@
     var chk = document.createElement('div'); chk.id = 'viewCheck'; chk.className = 'view';
     chk.innerHTML = bar('Check your medicines') + '<div class="view-body" id="viewCheckBody"></div>';
 
+    var scan = document.createElement('div'); scan.id = 'viewScan'; scan.className = 'view';
+    scan.innerHTML = bar('Scan your medicines') + '<div class="view-body" id="viewScanBody"></div>';
+    var plan = document.createElement('div'); plan.id = 'viewPlan'; plan.className = 'view';
+    plan.innerHTML = bar('Your medicine plan', 'scan') + '<div class="view-body" id="viewPlanBody"></div>';
+
     // bottom bar: Account, Home (middle), Camera
     var nav = document.createElement('nav'); nav.id = 'bottomNav'; nav.setAttribute('aria-label', 'Main');
     nav.innerHTML =
@@ -73,7 +79,7 @@
       '<button type="button" data-go="check">' + ICON.camera + '<span>Check medicine</span></button>';
 
     var firstScript = document.querySelector('body > script');
-    [auth, acct, hist, chk, nav].forEach(function (el) { document.body.insertBefore(el, firstScript); });
+    [auth, acct, hist, chk, scan, plan, nav].forEach(function (el) { document.body.insertBefore(el, firstScript); });
 
     // sign-in card moves into its own page, with a clear way to skip
     adopt('authCard', $('viewAuthBody'));
@@ -96,6 +102,17 @@
     // the language button goes into the header, so it cannot sit on top of other buttons
     moveLang();
 
+    // step 2 (scan) and step 3 (your plan) are their own pages, each with a back arrow
+    if (typeof showStep2 === 'function' && !window.__ccStep2Wrapped) {
+      var orig = window.showStep2; window.__ccStep2Wrapped = true;
+      window.showStep2 = function () { var r = orig.apply(this, arguments); if (current !== 'check') go('scan'); return r; };
+    }
+    var rcard = $('resultsCard');
+    if (rcard && window.MutationObserver) {
+      new MutationObserver(function () { if (current === 'scan' && !rcard.classList.contains('hidden')) go('plan'); })
+        .observe(rcard, { attributes: true, attributeFilter: ['class'] });
+    }
+
     document.addEventListener('click', function (e) {
       var t = e.target.closest ? e.target.closest('[data-go]') : null;
       if (t) { e.preventDefault(); go(t.getAttribute('data-go')); }
@@ -115,13 +132,16 @@
   function go(view) {
     if (view === 'account' && !signedIn()) view = 'auth';
     if (current === 'check' && view !== 'check') leaveCheck();
+    if ((current === 'scan' || current === 'plan') && view !== 'scan' && view !== 'plan') leaveFlow();
     current = view;
     document.body.setAttribute('data-view', view);
     if (view === 'auth') { var c = $('authCard'); if (c) c.classList.remove('hidden'); }
     if (view === 'account') renderAccount();
     if (view === 'history') renderHistory();
     if (view === 'check') renderCheck();
-    var map = { home: 'home', account: 'account', auth: 'account', history: 'account', check: 'check' };
+    if (view === 'scan') renderScan();
+    if (view === 'plan') renderPlan();
+    var map = { home: 'home', account: 'account', auth: 'account', history: 'account', check: 'check', scan: 'home', plan: 'home' };
     var btns = document.querySelectorAll('#bottomNav button');
     for (var i = 0; i < btns.length; i++) {
       var on = btns[i].getAttribute('data-go') === map[view];
@@ -129,6 +149,22 @@
       if (on) btns[i].setAttribute('aria-current', 'page'); else btns[i].removeAttribute('aria-current');
     }
     try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  // ---------------- Step 2 (scan) and step 3 (plan) as pages
+  function renderScan() {
+    adopt('step2', $('viewScanBody'));
+    var s2 = $('step2'); if (s2) s2.classList.remove('hidden');
+  }
+  function renderPlan() {
+    adopt('resultsCard', $('viewPlanBody'));
+    var rc = $('resultsCard'); if (rc) rc.classList.remove('hidden');
+  }
+  function leaveFlow() {                    // back on Home, these cards wait (hidden) in their old place
+    giveBack('step2'); giveBack('resultsCard');
+    var s2 = $('step2'), rc = $('resultsCard');
+    if (s2) s2.classList.add('hidden');
+    if (rc) rc.classList.add('hidden');
   }
 
   // ---------------- Account

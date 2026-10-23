@@ -1,0 +1,9 @@
+{
+ "strings": {
+  "Scan your medicines": "İlaçlarınızı tarayın",
+  "Your medicine plan": "İlaç planınız",
+  "Back to scan": "Taramaya dön"
+ },
+ "extra_patterns": [],
+ "pattern_upgrades": []
+}

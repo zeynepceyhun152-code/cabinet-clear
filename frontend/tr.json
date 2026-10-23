@@ -281,7 +281,10 @@
   "✓ Valid": "✓ Geçerli",
   "Expiry dates come from the printed label. If you're unsure, check the box or ask your pharmacist.": "Son kullanma tarihleri ürünün üzerindeki basılı etiketten alınır. Emin değilseniz kutuyu kontrol edin veya eczacınıza sorun.",
   "this app does not recognize this name, so it could not check whether it is the same as a medicine on the other list": "bu uygulama bu adı tanımıyor, bu yüzden diğer listedeki bir ilaçla aynı olup olmadığını kontrol edemedi",
-  "the other list has a name this app does not recognize, so this may not be a real change": "diğer listede bu uygulamanın tanımadığı bir ad var, bu yüzden bu gerçek bir değişiklik olmayabilir"
+  "the other list has a name this app does not recognize, so this may not be a real change": "diğer listede bu uygulamanın tanımadığı bir ad var, bu yüzden bu gerçek bir değişiklik olmayabilir",
+  "Scan your medicines": "İlaçlarınızı tarayın",
+  "Your medicine plan": "İlaç planınız",
+  "Back to scan": "Taramaya dön"
  },
  "patterns": [
   {

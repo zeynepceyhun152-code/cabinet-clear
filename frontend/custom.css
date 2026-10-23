@@ -20,8 +20,9 @@ header #ccLangBtn { position: absolute !important; top: 0 !important; right: 0 !
 
 /* 4. Pages: only the current one shows */
 .view { display: none; }
-body[data-view="auth"] #viewAuth, body[data-view="account"] #viewAccount,
-body[data-view="history"] #viewHistory, body[data-view="check"] #viewCheck { display: block; }
+body[data-view="auth"] #viewAuth, body[data-view="account"] #viewAccount, body[data-view="history"] #viewHistory,
+body[data-view="check"] #viewCheck, body[data-view="scan"] #viewScan, body[data-view="plan"] #viewPlan { display: block; }
+body[data-view="scan"] #step2 .step-num, body[data-view="plan"] #resultsCard .step-num { display: none; }
 body[data-view]:not([data-view="home"]) header, body[data-view]:not([data-view="home"]) .container { display: none !important; }
 body[data-view="auth"] #bottomNav { display: none; }
 body[data-view="check"] #analyzeBtn { display: none; }
