@@ -1455,8 +1455,8 @@
           📅 Expiry date
         </div>
       </div>
-      <input type="file" id="file-front-${slotId}" accept=".jpg,.jpeg,.png,.webp" capture="camera" style="display:none" onchange="handleSlotPhoto(${slotId},'front',this)">
-      <input type="file" id="file-exp-${slotId}" accept=".jpg,.jpeg,.png,.webp" capture="camera" style="display:none" onchange="handleSlotPhoto(${slotId},'exp',this)">
+      <input type="file" id="file-front-${slotId}" accept=".jpg,.jpeg,.png,.webp" style="display:none" onchange="handleSlotPhoto(${slotId},'front',this)">
+      <input type="file" id="file-exp-${slotId}" accept=".jpg,.jpeg,.png,.webp" style="display:none" onchange="handleSlotPhoto(${slotId},'exp',this)">
       <div id="result-${slotId}" class="hidden"></div>
       <button onclick="scanSlot(${slotId})" id="scan-btn-${slotId}" style="width:100%;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit">
         Scan this medicine →
