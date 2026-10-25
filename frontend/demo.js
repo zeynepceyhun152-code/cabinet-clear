@@ -2,11 +2,11 @@
  * (for example https://cabinetclear.vercel.app/?demo=1).
  *
  * In demo mode:
- *  - The 1st and 2nd photo checks answer after a short wait with "unclear" and a pre-computed Grad-CAM image
+ *  - Every wait is 5 seconds. The 1st and 2nd photo checks answer with "unclear" and a pre-computed Grad-CAM image
  *    (the real output of my CNN on photos I prepared). Every later photo shows the usual green "clear", never a heat map
- *    (the real result is used when it arrives within 2 seconds and says clear; if the real CNN says unclear, or the server is slow, down or
+ *    (the real result is used when it arrives in time and says clear; if the real CNN says unclear, or the server is slow, down or
  *    answers with an error, green is shown anyway).
- *  - The first three "Scan this medicine" buttons answer after a few seconds with prepared results:
+ *  - The first three "Scan this medicine" buttons answer with prepared results:
  *    medicine 1: unknown unknown, medicine 2: ibucold C, medicine 3: D-Colefor. Later scans go to the real server.
  *  - "Please add at least one photo first" does not appear for those three scans (the app throws rejected photos away,
  *    so a stand-in photo is used).
@@ -18,9 +18,7 @@
   if (q.get('demo') !== '1' || !window.fetch) return;
 
   var SEQUENCE = ['/demo/photo1_gradcam.png', '/demo/photo2_gradcam.png'];   // 1st and 2nd photo check
-  var DELAY_MS = 1800;                                                       // wait before a photo check answers
-  var CLEAR_TIMEOUT_MS = 2000;                                               // after this, a photo check shows green even if the server has not answered
-  var SCAN_DELAY_MS = 2500;                                                  // wait before a scan answers ("a few seconds")
+  var WAIT_MS = Number(q.get('wait')) || 5000;                               // EVERY wait in demo mode: 5 seconds (add &wait=3000 to the link to change it)
   var SCAN_RESULTS = [
     { drug_name: 'unknown', dosage_strength: 'unknown', expiration_date: 'unknown', is_expired: null, extraction_confidence: 'low' },               // medicine 1
     { drug_name: 'ibucold C', dosage_strength: '200mg/30mg/300mg', expiration_date: 'S.K.T.: 02/2029', is_expired: false, extraction_confidence: 'high' },  // medicine 2
@@ -58,22 +56,26 @@
 
     if (url.indexOf('/check-clarity') !== -1 && used < SEQUENCE.length) {
       var image = SEQUENCE[used++];
-      return Promise.all([toBase64(image), new Promise(function (r) { setTimeout(r, DELAY_MS); })]).then(function (v) {
+      return Promise.all([toBase64(image), new Promise(function (r) { setTimeout(r, WAIT_MS); })]).then(function (v) {
         return json({ success: true, data: { is_clear: false, confidence_pct: 99.0, raw_score: 0.01, heatmap_base64: v[0], message: 'Image is unclear' } });
       }).catch(function () { return real(input, init); });          // if the image is missing, just use the real server
     }
 
     if (url.indexOf('/check-clarity') !== -1) {                      // after the two examples: green within a couple of seconds, never a heat map
-      var green = function () { return json({ success: true, data: { is_clear: true, confidence_pct: 95.0, raw_score: 0.95, heatmap_base64: '', message: 'Image is clear' } }); };
+      var green = function () {
+        var pct = Math.round((95 + Math.random() * 4) * 10) / 10;       // a different number each time, between 95 and 99
+        return json({ success: true, data: { is_clear: true, confidence_pct: pct, raw_score: pct / 100, heatmap_base64: '', message: 'Image is clear' } });
+      };
       var realAnswer = real(input, init).then(function (resp) {      // the real answer is used only if it arrives in time and says "clear"
         return resp.clone().json().then(function (j) { return (j && j.success && j.data && j.data.is_clear === true) ? resp : green(); });
-      }).catch(green);                                               // an error or a broken reply also becomes green
-      var giveUp = new Promise(function (r) { setTimeout(function () { r(green()); }, CLEAR_TIMEOUT_MS); });   // a slow or sleeping server too
-      return Promise.race([realAnswer, giveUp]);
+      }).catch(green);                                               // an error or a broken reply becomes green
+      var giveUp = new Promise(function (r) { setTimeout(function () { r(green()); }, WAIT_MS); });   // a slow or sleeping server too
+      var minimum = new Promise(function (r) { setTimeout(r, WAIT_MS); });                              // and the answer never comes before the wait is over
+      return Promise.all([Promise.race([realAnswer, giveUp]), minimum]).then(function (v) { return v[0]; });
     }
 
     if (url.indexOf('/scan-medicine') !== -1 && scanAction >= 0 && scanAction < SCAN_RESULTS.length) {
-      var action = scanAction, wait = waited[action] ? 0 : SCAN_DELAY_MS;   // the front and expiry photos of one scan wait only once
+      var action = scanAction, wait = waited[action] ? 0 : WAIT_MS;   // the front and expiry photos of one scan wait only once
       waited[action] = true;
       return new Promise(function (r) { setTimeout(r, wait); }).then(function () { return json({ success: true, data: SCAN_RESULTS[action] }); });
     }
