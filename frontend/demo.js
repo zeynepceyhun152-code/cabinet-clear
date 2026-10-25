@@ -4,7 +4,8 @@
  * In demo mode:
  *  - The 1st and 2nd photo checks answer after a short wait with "unclear" and a pre-computed Grad-CAM image
  *    (the real output of my CNN on photos I prepared). Every later photo shows the usual green "clear", never a heat map
- *    (the real result is used when it says clear; if the real CNN says unclear, or the server is slow or down, green is shown).
+ *    (the real result is used when it arrives within 2 seconds and says clear; if the real CNN says unclear, or the server is slow, down or
+ *    answers with an error, green is shown anyway).
  *  - The first three "Scan this medicine" buttons answer after a few seconds with prepared results:
  *    medicine 1: unknown unknown, medicine 2: ibucold C, medicine 3: D-Colefor. Later scans go to the real server.
  *  - "Please add at least one photo first" does not appear for those three scans (the app throws rejected photos away,
@@ -18,6 +19,7 @@
 
   var SEQUENCE = ['/demo/photo1_gradcam.png', '/demo/photo2_gradcam.png'];   // 1st and 2nd photo check
   var DELAY_MS = 1800;                                                       // wait before a photo check answers
+  var CLEAR_TIMEOUT_MS = 2000;                                               // after this, a photo check shows green even if the server has not answered
   var SCAN_DELAY_MS = 2500;                                                  // wait before a scan answers ("a few seconds")
   var SCAN_RESULTS = [
     { drug_name: 'unknown', dosage_strength: 'unknown', expiration_date: 'unknown', is_expired: null, extraction_confidence: 'low' },               // medicine 1
@@ -61,11 +63,13 @@
       }).catch(function () { return real(input, init); });          // if the image is missing, just use the real server
     }
 
-    if (url.indexOf('/check-clarity') !== -1) {                      // after the two examples: always green, never a heat map
+    if (url.indexOf('/check-clarity') !== -1) {                      // after the two examples: green within a couple of seconds, never a heat map
       var green = function () { return json({ success: true, data: { is_clear: true, confidence_pct: 95.0, raw_score: 0.95, heatmap_base64: '', message: 'Image is clear' } }); };
-      return real(input, init).then(function (resp) {
-        return resp.clone().json().then(function (j) { return (j && j.success && j.data && j.data.is_clear === false) ? green() : resp; });
-      }).catch(green);
+      var realAnswer = real(input, init).then(function (resp) {      // the real answer is used only if it arrives in time and says "clear"
+        return resp.clone().json().then(function (j) { return (j && j.success && j.data && j.data.is_clear === true) ? resp : green(); });
+      }).catch(green);                                               // an error or a broken reply also becomes green
+      var giveUp = new Promise(function (r) { setTimeout(function () { r(green()); }, CLEAR_TIMEOUT_MS); });   // a slow or sleeping server too
+      return Promise.race([realAnswer, giveUp]);
     }
 
     if (url.indexOf('/scan-medicine') !== -1 && scanAction >= 0 && scanAction < SCAN_RESULTS.length) {
